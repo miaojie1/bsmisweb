@@ -12,19 +12,26 @@
               <span @click="linkMenu(item.url)">{{item.text}}</span>
           </div>
         </div>
-        <div class="layout-infor">
-          <Icon type="md-add" color="white" style="margin-right: 40px" size="30"/>
-          <Dropdown transfer="true" style="float:right">
-            <a href="javascript:void(0)">
-              <Icon type="ios-contact-outline" color="white" size="30" style="float: right;"/>
-            </a>
-            <DropdownMenu slot="list">
-              <DropdownItem>个人信息</DropdownItem>
-              <DropdownItem>设置</DropdownItem>
-              <DropdownItem>注销登录</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </div>
+        <Dropdown transfer="true" style="float:right">
+          <a href="javascript:void(0)">
+            <Icon type="ios-contact-outline" color="white" size="30"/>
+          </a>
+          <DropdownMenu slot="list" class="layout-infor-menu">
+            <DropdownItem>个人信息</DropdownItem>
+            <DropdownItem>设置</DropdownItem>
+            <DropdownItem>注销登录</DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+        <Dropdown transfer="true" style="float:right; margin-left: 100px">
+          <a href="javascript:void(0)">
+            <Icon type="md-add" color="white" style="margin-right: 40px" size="30"/>
+          </a>
+          <DropdownMenu slot="list" class="layout-infor-menu">
+            <DropdownItem>设置1</DropdownItem>
+            <DropdownItem>设置2</DropdownItem>
+            <DropdownItem>设置3</DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </Header>
       <Layout>
         <Sider hide-trigger class="navContainer">
@@ -129,14 +136,6 @@ export default {
 .ivu-layout.ivu-layout-has-sider>.ivu-layout, .ivu-layout.ivu-layout-has-sider>.ivu-layout-content {
   padding: 0px 20px !important;
 }
-.ivu-select-dropdown.ivu-dropdown-transfer {
-  width: 200px !important;
-  padding-top: 100px !important;
-}
-.ivu-select-dropdown {
-  /* min-width: 180px !important; */
-  /* margin: 30px 10px !important; */
-}
 .layout-logo{
   width: 200px;
   height: 30px;
@@ -167,15 +166,6 @@ export default {
 }
 .layout-nav-item :hover {
   color: #2d8cf0;
-}
-.layout-infor {
-  width: 20%;
-  height: 64px;
-  float: right;
-  padding-top: 20px;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
 }
 .contentContainer {
   padding: 24px;
