@@ -65,6 +65,6 @@ export default {
 .loginText {
   display: block;
   font: 16px bold;
-  margin-bottom: 10px
+  margin-bottom: 20px
 }
 </style>
