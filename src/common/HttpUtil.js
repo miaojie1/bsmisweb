@@ -1,6 +1,7 @@
 var axios = require('axios')
 // 本地
-// var root = 'http://192.168.4.64:8198/aprilcode-selfhelp/'
+var root = 'http://localhost:8080'
+// var root = 'http://192.168.0.103:8080'
 // 服务器
 // var root = 'http://192.168.248.156:8199/aprilcode-selfhelp/'
 // 外网
@@ -16,22 +17,22 @@ function httpApi (method, url, params, that) {
       // 在发送请求之前做些什么
       return config
     }, error => {
-      this.$Message.warning('请求超时！')
+      // this.$Message.warning('请求超时！')
       // 对请求错误做些什么
       return Promise.reject(error)
     })
     axios.interceptors.response.use(data => {
       if (data.status !== 200) {
-        MessageBox({
-          title: '错误',
-          message: data.data.msg,
-          showCancelButton: true
-        })
+        // MessageBox({
+        //   title: '错误',
+        //   message: data.data.msg,
+        //   showCancelButton: true
+        // })
       }
       return data
     }, error => {
       if (error.response.status === 504 || error.response.status === 404) {
-        this.$Message.warning('服务器被吃了⊙﹏⊙∥ ')
+        // this.$Message.warning('服务器被吃了⊙﹏⊙∥ ')
       }
       // 对请求错误做些什么
       return error
@@ -47,9 +48,9 @@ function httpApi (method, url, params, that) {
       resolve(res)
     }).catch((err) => {
       if (err.code === 'ECONNABORTED' && err.message.indexOf('timeout') !== -1) {
-        that.$message('请求超时！')
+        // that.$message('请求超时！')
       } else {
-        that.$message('请求出错了！')
+        // that.$message('请求出错了！')
       }
       reject(err)
     })

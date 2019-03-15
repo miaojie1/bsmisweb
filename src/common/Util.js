@@ -1,6 +1,6 @@
 import axios from 'axios'
 var SM = {
-  serverUrl: null, // ...接口地址
+  serverUrl: '127.0.0.1', // ...接口地址
   userName: null, // 用户名
   passWord: null, // 密码
   JWTToken: null,
@@ -38,7 +38,8 @@ var SM = {
   post: function (url, data, success, errors) {
     axios({
       method: 'POST',
-      url: this.serverUrl + url,
+      // url: this.serverUrl + url,
+      url: 'https://127.0.0.1:8080/auto/oauth/token',
       headers: {
         'JWTToken': localStorage.getItem('jwtToken')
       },
@@ -61,7 +62,9 @@ var SM = {
   get: function (url, success, error) {
     axios({
       method: 'GET',
-      url: this.serverUrl + url,
+      url: url,
+      // url: 'http://127.0.0.1:8080/auto/oauth/token',
+      // url: this.serverUrl + url,
       headers: {
         'JWTToken': localStorage.getItem('jwtToken')
       },

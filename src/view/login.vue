@@ -35,8 +35,21 @@ export default {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$Message.success('登录成功!')
-          this.$router.push('/index')
+          // this.$http.get('http://localhost:8080/auto/oauth/token').then(res => {
+          //   console.log(res)
+          // })
+          var data = {
+            Username: this.loginForm.username,
+            Password: this.loginForm.password,
+            ClientID: 'zhang',
+            ClientSecret: 'zhan',
+            Scope: 'all'
+          }
+          this.$http.post('/auth/oauth/token', JSON.stringify(data)).then(res => {
+            console.log(res)
+          })
+          // this.$Message.success('登录成功!')
+          // this.$router.push('/index')
         } else {
           this.$Message.error('登录失败!')
         }
