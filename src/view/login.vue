@@ -35,21 +35,21 @@ export default {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          // this.$http.get('http://localhost:8080/auto/oauth/token').then(res => {
-          //   console.log(res)
-          // })
-          var data = {
-            Username: this.loginForm.username,
-            Password: this.loginForm.password,
-            ClientID: 'zhang',
-            ClientSecret: 'zhan',
-            Scope: 'all'
-          }
-          this.$http.post('/auth/oauth/token', JSON.stringify(data)).then(res => {
-            console.log(res)
+          // var data = {
+          //   username: this.loginForm.username,
+          //   password: this.loginForm.password,
+          //   grant_type: 'password',
+          //   scope: 'all',
+          //   client_id: 'xinguan',
+          //   client_secret: 'admin123'
+          // }
+          var url = '/oauth/token?username=' + this.loginForm.username + '&password=' + this.loginForm.password + '&grant_type=password&client_id=xinguan&client_secret=admin123'
+          this.$http.post(url).then(res => {
+            if (this.$http.setToken(res)) {
+              this.$Message.success('登录成功!')
+              this.$router.push('/index')
+            }
           })
-          // this.$Message.success('登录成功!')
-          // this.$router.push('/index')
         } else {
           this.$Message.error('登录失败!')
         }
@@ -77,7 +77,7 @@ export default {
 }
 .loginText {
   display: block;
-  font: 16px bold;
+  font: 16px bolder;
   margin-bottom: 20px
 }
 </style>

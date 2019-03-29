@@ -1,6 +1,6 @@
 import axios from 'axios'
 var SM = {
-  serverUrl: '127.0.0.1', // ...接口地址
+  serverUrl: 'http://241514e6c9.wicp.vip:33846/supervision', // ...接口地址
   userName: null, // 用户名
   passWord: null, // 密码
   JWTToken: null,
@@ -41,7 +41,8 @@ var SM = {
       // url: this.serverUrl + url,
       url: 'https://127.0.0.1:8080/auto/oauth/token',
       headers: {
-        'JWTToken': localStorage.getItem('jwtToken')
+        'JWTToken': localStorage.getItem('jwtToken'),
+        'Content-Type': 'application/json; charset=utf-8'
       },
       withCredentials: true,
       data: {
