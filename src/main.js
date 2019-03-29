@@ -4,10 +4,12 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import iview from 'iview'
-import HTTP from './common/Util'
+// import HTTP from './common/Util'
+import request from './common/HttpUtil'
 import 'iview/dist/styles/iview.css'
 Vue.config.productionTip = false
-Vue.prototype.$http = HTTP
+// Vue.prototype.$http = HTTP
+Vue.prototype.$http = request
 Vue.use(iview)
 /* eslint-disable no-new */
 new Vue({

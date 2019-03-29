@@ -12,17 +12,17 @@
               <span @click="linkMenu(item.url)">{{item.text}}</span>
           </div>
         </div>
-        <Dropdown transfer="true" style="float:right">
+        <Dropdown style="float:right" @on-click="setting">
           <a href="javascript:void(0)">
             <Icon type="ios-contact-outline" color="white" size="30"/>
           </a>
           <DropdownMenu slot="list" class="layout-infor-menu">
-            <DropdownItem>个人信息</DropdownItem>
-            <DropdownItem>设置</DropdownItem>
-            <DropdownItem>注销登录</DropdownItem>
+            <DropdownItem name="infor">个人信息</DropdownItem>
+            <DropdownItem name="setting">设置</DropdownItem>
+            <DropdownItem name="logout">注销登录</DropdownItem>
           </DropdownMenu>
         </Dropdown>
-        <Dropdown transfer="true" style="float:right; margin-left: 100px">
+        <Dropdown style="float:right; margin-left: 100px">
           <a href="javascript:void(0)">
             <Icon type="md-add" color="white" style="margin-right: 40px" size="30"/>
           </a>
@@ -109,11 +109,36 @@ export default {
     }
   },
   created: function () {
-    // this.$http.test()
+    this.init()
   },
   methods: {
     linkMenu (url) {
       this.$router.push(url)
+    },
+    setting (name) {
+      if (name === 'infor') {
+        this.$Message.info('点击个人信息！')
+      } else if (name === 'setting') {
+        this.$Message.info('点击设置')
+      } else if (name === 'logout') {
+        this.$Modal.confirm({
+          title: '提示',
+          content: '确定退出系统吗？',
+          onOk: () => {
+            this.$router.push('/login')
+            this.$Message.info('成功退出！')
+          },
+          onCancel: () => {
+            this.$Message.info('您已取消退出！')
+          }
+        })
+      }
+    },
+    init () {
+      let url = '/menu/listMenu'
+      this.$http.get(url).then(res => {
+        console.log(res)
+      })
     }
   }
 }
@@ -156,7 +181,6 @@ export default {
 }
 .layout-nav-item {
   width: 100px;
-  /* height: 64px; */
   float: right;
   color: white;
   font: 15px bold;

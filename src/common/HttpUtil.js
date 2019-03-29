@@ -1,71 +1,127 @@
 var axios = require('axios')
+// var qs = require('qs')
+// 用qs解析，jsonToForm
+// axios.interceptors.request.use(config => {
+//   // if (config.type === 'formData' || config.method !== 'post') {
+//   //   return config
+//   // }
+//   config.data = qs.stringify(config.data)
+//   console.log(config.data)
+//   return config
+// }, (err) => {
+//   // Message.error({
+//   //   message: '加载超时'
+//   // })
+//   return Promise.reject(err)
+// })
 // 本地
-// var root = 'http://192.168.4.64:8198/aprilcode-selfhelp/'
+// var root = 'https://localhost:8080/auth'
 // 服务器
-// var root = 'http://192.168.248.156:8199/aprilcode-selfhelp/'
-// 外网
-// var root = 'http://hcm.pansoft.com/snape-mobile/'
-function httpApi (method, url, params, that) {
-  return new Promise((resolve, reject) => {
-    // 设置超时时间
-    axios.defaults.retry = 4
-    axios.defaults.retryDelay = 1000
-    axios.defaults.timeout = 20000
-    // 添加请求拦截器
-    axios.interceptors.request.use(config => {
-      // 在发送请求之前做些什么
-      return config
-    }, error => {
-      this.$Message.warning('请求超时！')
-      // 对请求错误做些什么
-      return Promise.reject(error)
-    })
-    axios.interceptors.response.use(data => {
-      if (data.status !== 200) {
-        MessageBox({
-          title: '错误',
-          message: data.data.msg,
-          showCancelButton: true
-        })
-      }
-      return data
-    }, error => {
-      if (error.response.status === 504 || error.response.status === 404) {
-        this.$Message.warning('服务器被吃了⊙﹏⊙∥ ')
-      }
-      // 对请求错误做些什么
-      return error
-    })
-    axios({
-      method: method,
-      url: url,
-      data: method === 'POST' || method === 'PUT' ? params : null,
-      params: method === 'GET' || method === 'DELETE' ? params : null,
-      baseURL: root,
-      withCredentials: true
-    }).then((res) => {
-      resolve(res)
-    }).catch((err) => {
-      if (err.code === 'ECONNABORTED' && err.message.indexOf('timeout') !== -1) {
-        that.$message('请求超时！')
-      } else {
-        that.$message('请求出错了！')
-      }
-      reject(err)
-    })
-  })
-}
+var root = 'http://241514e6c9.wicp.vip:33846/supervision'
 export default{
   get: function (url, params) {
-    return httpApi('GET', url, params)
-  },
-  post: function (url, params) {
-    return httpApi('POST', url, params)
+    return new Promise((resolve, reject) => {
+      axios({
+        method: 'GET',
+        url: url,
+        headers: {
+          'JWTToken': localStorage.getItem('jwtToken')
+        },
+        params: params,
+        baseURL: root,
+        withCredentials: true
+      }).then((res) => {
+        resolve(res)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
   },
   put: function (url, params) {
-    return httpApi('PUT', url, params)
+    return new Promise((resolve, reject) => {
+      // 设置超时时间
+      // axios.defaults.retry = 4
+      // axios.defaults.retryDelay = 1000
+      // axios.defaults.timeout = 20000
+      // 添加请求拦截器
+      axios({
+        method: 'PUT',
+        url: url,
+        headers: {
+          'JWTToken': localStorage.getItem('jwtToken'),
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        data: params,
+        baseURL: root,
+        withCredentials: true
+      }).then((res) => {
+        resolve(res)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
   },
   delete: function (url, params) {
-    return httpApi('DELETE', url, params)
+    return new Promise((resolve, reject) => {
+      // 设置超时时间
+      // axios.defaults.retry = 4
+      // axios.defaults.retryDelay = 1000
+      // axios.defaults.timeout = 20000
+      // 添加请求拦截器
+      axios({
+        method: 'DELETE',
+        url: url,
+        headers: {
+          'JWTToken': localStorage.getItem('jwtToken'),
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        params: params,
+        baseURL: root,
+        withCredentials: true
+      }).then((res) => {
+        resolve(res)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  },
+  post: function (url, params) {
+    return new Promise((resolve, reject) => {
+      // 设置超时时间
+      // axios.defaults.retry = 4
+      // axios.defaults.retryDelay = 1000
+      // axios.defaults.timeout = 20000
+      // 添加请求拦截器
+      axios({
+        method: 'POST',
+        url: url,
+        // headers: {
+        //   'Content-Type': 'application/x-www-form-urlencoded'
+        // },
+        headers: {
+          'JWTToken': localStorage.getItem('jwtToken'),
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        data: params,
+        baseURL: root,
+        withCredentials: true
+      }).then((res) => {
+        resolve(res)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  },
+  setToken (res) {
+    console.log(res)
+    if (res.status === 200) {
+      var token = res.data
+      if (token !== null && token !== '' && token !== undefined) {
+        localStorage.setItem('jwtToken', token.access_token)
+        return true
+      }
+    } else {
+      return false
+    }
   }
 }
