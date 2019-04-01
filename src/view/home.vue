@@ -11,7 +11,7 @@
             <Icon type="ios-loop-strong"></Icon>
             查看更多
           </a>
-          <div class="notice">
+          <div class="notice"  style="color:#57a3f3">
             <marquee behavior="scroll" direction="up" loop="infinite" scrollamount="2" scrolldelay="30" onMouseOut="this.start()" onMouseOver="this.stop()">
               <p>实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例</p>
               <p>实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例实现走马灯效果滚动示例</p>
@@ -31,6 +31,11 @@
           </a>
           <div class="notice">
             <div class="notice-item" v-for="item in 3" :key="item">
+              <div class="notice-btn">
+                <Icon type="md-square" v-if="item === 1" style="color: #ed4014" />
+                <Icon type="md-square" v-if="item === 2" style="color: #19be6b" />
+                <Icon type="md-square" v-if="item === 3" style="color: #ff9900" />
+              </div>
               <div class="notice-text">
                 xinwenlieb新闻列表xinwenlieb新闻列表xinxinwenlieb新闻列表xinwenlieb新闻列表xinwenlieb新闻列表xinwenlieb新闻列表xinwen···
               </div>
@@ -127,8 +132,12 @@ export default {
   flex-flow: row;
   border-bottom: 1pt rgb(218, 215, 212) solid;
 }
+.notice-btn {
+  width: 4%;
+  height: 3rem;
+}
 .notice-text {
-  width: 84%;
+  width: 80%;
   height: 3rem;
 }
 .notice-action {
