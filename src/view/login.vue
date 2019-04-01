@@ -47,7 +47,7 @@ export default {
           this.$http.post(url).then(res => {
             if (this.$http.setToken(res)) {
               this.$Message.success('登录成功!')
-              this.$router.push('/index')
+              this.$router.push('/home')
             }
           })
         } else {

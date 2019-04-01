@@ -23,15 +23,23 @@ export default new Router({
       component: () => import('@/view/index'),
       children: [
         {
+          path: '/home',
+          name: '首页',
+          component: () => import('@/view/home')
+        },
+        {
           path: '/item1',
+          name: '菜单1',
           component: () => import('@/view/common/temp')
         },
         {
           path: '/item2',
+          name: '菜单2',
           component: () => import('@/view/workManage/temp')
         },
         {
           path: '/item3',
+          name: '菜单3',
           component: () => import('@/view/workProcess/temp')
         }
       ]
