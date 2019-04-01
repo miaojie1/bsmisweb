@@ -7,9 +7,9 @@
           建设监理信息系统
         </div>
         <div class="layout-nav">
-          <div class="layout-nav-item" v-for="(item, index) in menuData" :key="index" @click="linkMenu(item.url)">
-              <Icon type="ios-navigate"></Icon>
-              <span @click="linkMenu(item.url)">{{item.text}}</span>
+          <div class="layout-nav-item" v-for="(item, index) in headMenuData" :key="index" @click="linkMenu(item.url)">
+            <Icon type="ios-navigate"></Icon>
+            <span>{{item.text}}</span>
           </div>
         </div>
         <Dropdown style="float:right" @on-click="setting">
@@ -18,8 +18,8 @@
           </a>
           <DropdownMenu slot="list" class="layout-infor-menu">
             <DropdownItem name="infor">个人信息</DropdownItem>
-            <DropdownItem name="setting">设置</DropdownItem>
-            <DropdownItem name="logout">注销登录</DropdownItem>
+            <!-- <DropdownItem name="setting">设置</DropdownItem>
+            <DropdownItem name="logout">注销登录</DropdownItem> -->
           </DropdownMenu>
         </Dropdown>
         <Dropdown style="float:right; margin-left: 100px">
@@ -50,9 +50,8 @@
         </Sider>
         <Layout :style="{padding: '0 24px 24px'}">
           <Breadcrumb :style="{margin: '24px 0'}">
-            <BreadcrumbItem>Home</BreadcrumbItem>
-            <BreadcrumbItem>Components</BreadcrumbItem>
-            <BreadcrumbItem>Layout</BreadcrumbItem>
+            <BreadcrumbItem to="/home">Home</BreadcrumbItem>
+            <BreadcrumbItem>{{ $route.name }}</BreadcrumbItem>
           </Breadcrumb>
           <Content class="contentContainer">
             <router-view></router-view>
@@ -105,6 +104,20 @@ export default {
             }
           ]
         }
+      ],
+      headMenuData: [
+        {
+          text: '首页',
+          url: '/home'
+        },
+        {
+          text: '菜单2',
+          url: '/item2'
+        },
+        {
+          text: '菜单3',
+          url: '/item3'
+        }
       ]
     }
   },
@@ -114,6 +127,8 @@ export default {
   methods: {
     linkMenu (url) {
       this.$router.push(url)
+      console.log('``````````````````````````' + url)
+      console.log(this.$route)
     },
     setting (name) {
       if (name === 'infor') {
@@ -137,7 +152,7 @@ export default {
     init () {
       let url = '/menu/listMenu'
       this.$http.get(url).then(res => {
-        console.log(res)
+        // console.log(res)
       })
     }
   }
@@ -173,15 +188,17 @@ export default {
   left: 0px;
 }
 .layout-nav{
-  width: 60%;
+  width: 24%;
   height: 64px;
   margin: 0 auto;
+  margin-left: 540px;
   float: left;
-  margin-right: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: end
 }
 .layout-nav-item {
   width: 100px;
-  float: right;
   color: white;
   font: 15px bold;
   margin: auto 20px;
