@@ -41,6 +41,16 @@ export default new Router({
           path: '/item3',
           name: '菜单3',
           component: () => import('@/view/workProcess/temp')
+        },
+        {
+          path: '/home##',
+          name: '菜单管理',
+          component: () => import('@/view/common/menuManage')
+        },
+        {
+          path: '/testbtn',
+          name: '测试按钮',
+          component: () => import('@/view/test')
         }
       ]
     }

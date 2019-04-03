@@ -36,14 +36,14 @@
       <Layout>
         <Sider hide-trigger class="navContainer">
           <Menu theme="light" width="auto" active-name="1">
-            <Submenu v-for="(item, Index) in menuData" :key="Index" :name="Index">
+            <Submenu v-for="(item, Index) in menuData" :key="Index" :name="item.name">
               <template slot="title">
                 <Icon type="ios-cog" />
-                {{item.text}}
+                {{item.name}}
               </template>
-              <MenuItem v-for="(i, index) in item.children" :key="index" :to="i.url" :name="i.text">
+              <MenuItem v-for="(i, index) in item.subMenus" :key="index" :to="i.url" :name="i.name">
                 <Icon type="ios-navigate"></Icon>
-                {{i.text}}
+                {{i.name}}
               </MenuItem>
             </Submenu>
           </Menu>
@@ -65,54 +65,15 @@
 export default {
   data () {
     return {
-      menuData: [
-        {
-          text: '菜单1',
-          url: '/item1',
-          children: [
-            {
-              text: '子菜单1',
-              url: '/item1'
-            },
-            {
-              text: '子菜单2',
-              url: '/item2'
-            }
-          ]
-        },
-        {
-          text: '菜单2',
-          url: '/item2',
-          children: [
-            {
-              text: '子菜单3',
-              url: '/item2'
-            }
-          ]
-        },
-        {
-          text: '菜单3',
-          url: '/item3',
-          children: [
-            {
-              text: '子菜单4',
-              url: '/item2'
-            },
-            {
-              text: '子菜单5',
-              url: '/item3'
-            }
-          ]
-        }
-      ],
+      menuData: [],
       headMenuData: [
         {
           text: '首页',
           url: '/home'
         },
         {
-          text: '菜单2',
-          url: '/item2'
+          text: '测试按钮',
+          url: '/testbtn'
         },
         {
           text: '菜单3',
@@ -127,8 +88,6 @@ export default {
   methods: {
     linkMenu (url) {
       this.$router.push(url)
-      console.log('``````````````````````````' + url)
-      console.log(this.$route)
     },
     setting (name) {
       if (name === 'infor') {
@@ -150,9 +109,11 @@ export default {
       }
     },
     init () {
-      let url = '/menu/listMenu'
-      this.$http.get(url).then(res => {
-        // console.log(res)
+      let url = '/menu/listMenu?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.post(url).then(res => {
+        if (res.status === 200) {
+          this.menuData = res.data
+        }
       })
     }
   }
