@@ -1,17 +1,19 @@
 <template>
-  <Form ref="loginForm" class="loginForm" :model="loginForm" :rules="rules">
-    <span class="loginText">用户登录</span>
-    <FormItem prop="username">
-      <Input type="text" prefix="ios-contact" v-model="loginForm.username" placeholder="用户名" />
-    </FormItem>
-    <FormItem prop="password">
-      <Input type="password" prefix="ios-lock-outline" v-model="loginForm.password" placeholder="密码" />
-    </FormItem>
-    <FormItem>
-      <Button @click="handleCancel('loginForm')" style="margin-right: 20px">取消</Button>
-      <Button type="primary" @click="handleSubmit('loginForm')">登录</Button>
-    </FormItem>
-  </Form>
+  <div class="container">
+    <Form ref="loginForm" class="loginForm" :model="loginForm" :rules="rules">
+      <span class="loginText">用户登录</span>
+      <FormItem prop="username">
+        <Input type="text" prefix="ios-contact" v-model="loginForm.username" placeholder="用户名" />
+      </FormItem>
+      <FormItem prop="password">
+        <Input type="password" prefix="ios-lock-outline" v-model="loginForm.password" placeholder="密码" />
+      </FormItem>
+      <FormItem>
+        <Button @click="handleCancel('loginForm')" style="margin-right: 20px">取消</Button>
+        <Button type="primary" @click="handleSubmit('loginForm')">登录</Button>
+      </FormItem>
+    </Form>
+  </div>
 </template>
 <script>
 export default {
@@ -61,7 +63,15 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style>
+.container {
+  width: 100% !important;
+  height: 100% !important;
+  /* background-image: url('../assets/loginbg.png'); */
+}
+.loginForm .ivu-form .ivu-form-label-right {
+  background-image: url('../assets/loginbg.png');
+}
 .loginForm {
   -webkit-border-radius: 5px;
   border-radius: 5px;
