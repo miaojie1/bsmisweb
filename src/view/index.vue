@@ -84,6 +84,7 @@ export default {
   },
   created: function () {
     this.init()
+    this.$Spin.show()
   },
   methods: {
     linkMenu (url) {
@@ -109,10 +110,14 @@ export default {
       }
     },
     init () {
-      let url = '/menu/listMenu?access_token=' + localStorage.getItem('jwtToken')
-      this.$http.post(url).then(res => {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/menu/listMenu'
+      this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data
+          this.$Spin.hide()
         }
       })
     }

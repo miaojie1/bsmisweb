@@ -10,7 +10,10 @@
       </FormItem>
       <FormItem>
         <Button @click="handleCancel('loginForm')" style="margin-right: 20px">取消</Button>
-        <Button type="primary" @click="handleSubmit('loginForm')">登录</Button>
+        <Button type="primary" :loading="loading" @click="handleSubmit('loginForm')">
+          <span v-if="!loading">登录</span>
+          <span v-else>登录中...</span>
+        </Button>
       </FormItem>
     </Form>
   </div>
@@ -23,6 +26,7 @@ export default {
         username: '',
         password: ''
       },
+      loading: false,
       rules: {
         username: [
           { required: true, message: '用户名不能为空', trigger: 'blur' }
@@ -37,16 +41,17 @@ export default {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          // var data = {
-          //   username: this.loginForm.username,
-          //   password: this.loginForm.password,
-          //   grant_type: 'password',
-          //   scope: 'all',
-          //   client_id: 'xinguan',
-          //   client_secret: 'admin123'
-          // }
-          var url = '/oauth/token?username=' + this.loginForm.username + '&password=' + this.loginForm.password + '&grant_type=password&client_id=xinguan&client_secret=admin123'
-          this.$http.post(url).then(res => {
+          this.loading = true
+          var data = {
+            username: this.loginForm.username,
+            password: this.loginForm.password,
+            grant_type: 'password',
+            scope: 'all',
+            client_id: 'xinguan',
+            client_secret: 'admin123'
+          }
+          var url = '/oauth/token'
+          this.$http.post(url, data).then(res => {
             if (this.$http.setToken(res)) {
               this.$Message.success('登录成功!')
               this.$router.push('/home')

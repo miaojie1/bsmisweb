@@ -1,19 +1,20 @@
 var axios = require('axios')
-// var qs = require('qs')
-// 用qs解析，jsonToForm
-// axios.interceptors.request.use(config => {
-//   // if (config.type === 'formData' || config.method !== 'post') {
-//   //   return config
-//   // }
-//   config.data = qs.stringify(config.data)
-//   console.log(config.data)
-//   return config
-// }, (err) => {
-//   // Message.error({
-//   //   message: '加载超时'
-//   // })
-//   return Promise.reject(err)
-// })
+
+axios.interceptors.response.use((res) => {
+  debugger
+  console.log(res)
+  // token 已过期，重定向到登录页面
+  if (res.date.code === 401) {
+    localStorage.clear()
+    this.$router.replace({
+      path: '/login'
+    })
+  }
+  return res
+}, function (err) {
+  return Promise.reject(err)
+})
+
 // 本地
 // var root = 'https://localhost:8080/auth'
 // 服务器
@@ -95,18 +96,25 @@ export default{
       axios({
         method: 'POST',
         url: url,
-        // headers: {
-        //   'Content-Type': 'application/x-www-form-urlencoded'
-        // },
         headers: {
-          'JWTToken': localStorage.getItem('jwtToken'),
-          'Content-Type': 'application/json; charset=utf-8'
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         data: params,
+        transformRequest: [function (data) {
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+          }
+          return ret
+        }],
         baseURL: root,
         withCredentials: true
       }).then((res) => {
-        resolve(res)
+        debugger
+        if (this.setToken(res)) {
+          resolve(res)
+          alert('接口返回成功')
+        }
       }).catch((err) => {
         reject(err)
       })

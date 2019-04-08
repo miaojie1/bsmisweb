@@ -30,7 +30,7 @@ export default new Router({
         {
           path: '/item1',
           name: '菜单1',
-          component: () => import('@/view/common/temp')
+          component: () => import('@/view/workManage/temp')
         },
         {
           path: '/item2',
@@ -51,6 +51,16 @@ export default new Router({
           path: '/testbtn',
           name: '测试按钮',
           component: () => import('@/view/test')
+        },
+        {
+          path: '/user/listUser',
+          name: '用户管理',
+          component: () => import('@/view/common/userManage')
+        },
+        {
+          path: '/menu/listMenu',
+          name: '菜单管理',
+          component: () => import('@/view/common/menuManage')
         }
       ]
     }
