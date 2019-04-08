@@ -1,19 +1,19 @@
 var axios = require('axios')
 
-axios.interceptors.response.use((res) => {
-  debugger
-  console.log(res)
-  // token 已过期，重定向到登录页面
-  if (res.date.code === 401) {
-    localStorage.clear()
-    this.$router.replace({
-      path: '/login'
-    })
-  }
-  return res
-}, function (err) {
-  return Promise.reject(err)
-})
+// axios.interceptors.response.use((res) => {
+//   debugger
+//   console.log(res)
+//   // token 已过期，重定向到登录页面
+//   if (res.date.code === 401) {
+//     localStorage.clear()
+//     this.$router.replace({
+//       path: '/login'
+//     })
+//   }
+//   return res
+// }, function (err) {
+//   return Promise.reject(err)
+// })
 
 // 本地
 // var root = 'https://localhost:8080/auth'
