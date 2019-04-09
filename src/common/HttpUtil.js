@@ -1,19 +1,36 @@
+import {Message} from 'iview'
 var axios = require('axios')
 
-// axios.interceptors.response.use((res) => {
-//   debugger
-//   console.log(res)
-//   // token 已过期，重定向到登录页面
-//   if (res.date.code === 401) {
-//     localStorage.clear()
-//     this.$router.replace({
-//       path: '/login'
-//     })
-//   }
-//   return res
-// }, function (err) {
-//   return Promise.reject(err)
-// })
+axios.interceptors.response.use(
+  res => {
+    return res
+  },
+  err => {
+    console.log(err.response.status)
+    if (err.response.status === 400) {
+      localStorage.clear()
+      Message.info({
+        content: '用户名或者密码错误！',
+        duration: 10,
+        closable: true
+      })
+      this.$router.replace({
+        path: '/login'
+      })
+    } else if (err.response.status === 401) {
+      localStorage.clear()
+      Message.info({
+        content: '登录信息失效，请重新登录！',
+        duration: 10,
+        closable: true
+      })
+      this.$router.replace({
+        path: '/login'
+      })
+    }
+    return Promise.reject(err)
+  }
+)
 
 // 本地
 // var root = 'https://localhost:8080/auth'
@@ -110,10 +127,8 @@ export default{
         baseURL: root,
         withCredentials: true
       }).then((res) => {
-        debugger
         if (this.setToken(res)) {
           resolve(res)
-          alert('接口返回成功')
         }
       }).catch((err) => {
         reject(err)

@@ -52,13 +52,17 @@ export default {
           }
           var url = '/oauth/token'
           this.$http.post(url, data).then(res => {
+            this.loading = false
             if (this.$http.setToken(res)) {
               this.$Message.success('登录成功!')
               this.$router.push('/home')
+            } else {
+              this.$Message.error('登录失败!')
             }
+          }).catch(error => {
+            console.log(error)
+            this.loading = false
           })
-        } else {
-          this.$Message.error('登录失败!')
         }
       })
     },
