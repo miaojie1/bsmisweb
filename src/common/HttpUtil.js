@@ -3,10 +3,13 @@ var axios = require('axios')
 
 axios.interceptors.response.use(
   res => {
+    debugger
+    console.log(res)
     return res
   },
   err => {
-    console.log(err.response.status)
+    debugger
+    console.log(err)
     if (err.response.status === 400) {
       localStorage.clear()
       Message.info({
@@ -105,6 +108,7 @@ export default{
   },
   post: function (url, params) {
     return new Promise((resolve, reject) => {
+      debugger
       // 设置超时时间
       // axios.defaults.retry = 4
       // axios.defaults.retryDelay = 1000
@@ -136,13 +140,13 @@ export default{
     })
   },
   setToken (res) {
-    console.log(res)
     if (res.status === 200) {
       var token = res.data
-      if (token !== null && token !== '' && token !== undefined) {
+      if (token.access_token !== '' && token.access_token !== undefined) {
         localStorage.setItem('jwtToken', token.access_token)
-        return true
+        localStorage.setItem('refreshToken', token.refresh_token)
       }
+      return true
     } else {
       return false
     }
