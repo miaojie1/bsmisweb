@@ -59,7 +59,7 @@ export default new Router({
         },
         {
           path: '/menu/listMenu',
-          name: '菜单管理',
+          name: '用户菜单',
           component: () => import('@/view/common/menuManage')
         }
       ]

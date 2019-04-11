@@ -4,12 +4,10 @@ var axios = require('axios')
 axios.interceptors.response.use(
   res => {
     debugger
-    console.log(res)
     return res
   },
   err => {
     debugger
-    console.log(err)
     if (err.response.status === 400) {
       localStorage.clear()
       Message.info({
