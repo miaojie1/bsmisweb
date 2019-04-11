@@ -5,10 +5,13 @@
 </template>
 
 <script>
+import btnManage from '../../components/btnManage'
 export default {
+  components: {
+    btnManage
+  }
 }
 </script>
 
 <style>
-
 </style>

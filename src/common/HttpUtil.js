@@ -1,19 +1,40 @@
+import {Message} from 'iview'
 var axios = require('axios')
-// var qs = require('qs')
-// 用qs解析，jsonToForm
-// axios.interceptors.request.use(config => {
-//   // if (config.type === 'formData' || config.method !== 'post') {
-//   //   return config
-//   // }
-//   config.data = qs.stringify(config.data)
-//   console.log(config.data)
-//   return config
-// }, (err) => {
-//   // Message.error({
-//   //   message: '加载超时'
-//   // })
-//   return Promise.reject(err)
-// })
+
+axios.interceptors.response.use(
+  res => {
+    debugger
+    console.log(res)
+    return res
+  },
+  err => {
+    debugger
+    console.log(err)
+    if (err.response.status === 400) {
+      localStorage.clear()
+      Message.info({
+        content: '用户名或者密码错误！',
+        duration: 10,
+        closable: true
+      })
+      this.$router.replace({
+        path: '/login'
+      })
+    } else if (err.response.status === 401) {
+      localStorage.clear()
+      Message.info({
+        content: '登录信息失效，请重新登录！',
+        duration: 10,
+        closable: true
+      })
+      this.$router.replace({
+        path: '/login'
+      })
+    }
+    return Promise.reject(err)
+  }
+)
+
 // 本地
 // var root = 'https://localhost:8080/auth'
 // 服务器
@@ -87,6 +108,7 @@ export default{
   },
   post: function (url, params) {
     return new Promise((resolve, reject) => {
+      debugger
       // 设置超时时间
       // axios.defaults.retry = 4
       // axios.defaults.retryDelay = 1000
@@ -95,31 +117,36 @@ export default{
       axios({
         method: 'POST',
         url: url,
-        // headers: {
-        //   'Content-Type': 'application/x-www-form-urlencoded'
-        // },
         headers: {
-          'JWTToken': localStorage.getItem('jwtToken'),
-          'Content-Type': 'application/json; charset=utf-8'
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         data: params,
+        transformRequest: [function (data) {
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+          }
+          return ret
+        }],
         baseURL: root,
         withCredentials: true
       }).then((res) => {
-        resolve(res)
+        if (this.setToken(res)) {
+          resolve(res)
+        }
       }).catch((err) => {
         reject(err)
       })
     })
   },
   setToken (res) {
-    console.log(res)
     if (res.status === 200) {
       var token = res.data
-      if (token !== null && token !== '' && token !== undefined) {
+      if (token.access_token !== '' && token.access_token !== undefined) {
         localStorage.setItem('jwtToken', token.access_token)
-        return true
+        localStorage.setItem('refreshToken', token.refresh_token)
       }
+      return true
     } else {
       return false
     }

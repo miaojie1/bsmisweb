@@ -41,7 +41,7 @@
                 <Icon type="ios-cog" />
                 {{item.name}}
               </template>
-              <MenuItem v-for="(i, index) in item.subMenus" :key="index" :to="i.url" :name="i.name">
+              <MenuItem v-for="(i, index) in item.subMenus" :key="index" :to="i.url" :name="i.name" @on-select="menuItemClick(i)">
                 <Icon type="ios-navigate"></Icon>
                 {{i.name}}
               </MenuItem>
@@ -84,10 +84,16 @@ export default {
   },
   created: function () {
     this.init()
+    this.$Spin.show()
   },
   methods: {
-    linkMenu (url) {
-      this.$router.push(url)
+    linkMenu (url, operation) {
+      this.$router.push({
+        path: url,
+        query: {
+          operation: operation
+        }
+      })
     },
     setting (name) {
       if (name === 'infor') {
@@ -109,12 +115,20 @@ export default {
       }
     },
     init () {
-      let url = '/menu/listMenu?access_token=' + localStorage.getItem('jwtToken')
-      this.$http.post(url).then(res => {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/menu/listMenu'
+      this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data
+          this.$Spin.hide()
         }
       })
+    },
+    menuItemClick (menu) {
+      console.log('-------------------------------')
+      console.log(menu)
     }
   }
 }

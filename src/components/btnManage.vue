@@ -34,8 +34,6 @@ export default {
   },
   watch: {
     buttonList (value) {
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-      console.log(value)
       this.showBtn(value)
     }
   }
