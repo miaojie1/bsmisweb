@@ -18,8 +18,8 @@
           </a>
           <DropdownMenu slot="list" class="layout-infor-menu">
             <DropdownItem name="infor">个人信息</DropdownItem>
-            <!-- <DropdownItem name="setting">设置</DropdownItem>
-            <DropdownItem name="logout">注销登录</DropdownItem> -->
+            <DropdownItem name="setting">设置</DropdownItem>
+            <DropdownItem name="logout">注销登录</DropdownItem>
           </DropdownMenu>
         </Dropdown>
         <Dropdown style="float:right; margin-left: 100px">
@@ -41,7 +41,7 @@
                 <Icon type="ios-cog" />
                 {{item.name}}
               </template>
-              <MenuItem v-for="(i, index) in item.subMenus" :key="index" :to="i.url" :name="i.name" @on-select="menuItemClick(i)">
+              <MenuItem v-for="(i, index) in item.subMenus" :key="index" :name="i.name" @click.native="menuItemClick(i)">
                 <Icon type="ios-navigate"></Icon>
                 {{i.name}}
               </MenuItem>
@@ -79,20 +79,19 @@ export default {
           text: '菜单3',
           url: '/item3'
         }
-      ]
+      ],
+      activeName: ''
     }
   },
   created: function () {
     this.init()
     this.$Spin.show()
+    // this.activeName = localStorage.getItem('currentPath')
   },
   methods: {
-    linkMenu (url, operation) {
+    linkMenu (url) {
       this.$router.push({
-        path: url,
-        query: {
-          operation: operation
-        }
+        path: url
       })
     },
     setting (name) {
@@ -126,9 +125,21 @@ export default {
         }
       })
     },
-    menuItemClick (menu) {
-      console.log('-------------------------------')
-      console.log(menu)
+    menuItemClick (val) {
+      // this.$router.push({
+      //   path: val.url,
+      //   query: {
+      //     operation: val.operation
+      //   }
+      // })
+      // this.$store.commit('setOperation', val.operation)
+      this.$router.push({
+        name: val.name,
+        params: {
+          operation: val.operation
+        }
+      })
+      // localStorage.setItem('currentPath', val.url)
     }
   }
 }
