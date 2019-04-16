@@ -17,7 +17,6 @@ export default {
     console.log(this.$route.params.operation)
     localStorage.setItem('operation', JSON.stringify(this.$route.params.operation))
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
-    // this.buttonList = JSON.parse(localStorage.getItem('operation'))
   },
   components: {
     btnManage

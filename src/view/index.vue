@@ -35,7 +35,13 @@
       </Header>
       <Layout>
         <Sider hide-trigger class="navContainer">
-          <Menu theme="light" width="auto" active-name="1">
+          <Menu
+            accordion
+            theme="light"
+            width="auto"
+            ref="side_menu"
+            :open-names="openedMenu"
+            :active-name="activeName">
             <Submenu v-for="(item, Index) in menuData" :key="Index" :name="item.name">
               <template slot="title">
                 <Icon type="ios-cog" />
@@ -80,13 +86,18 @@ export default {
           url: '/item3'
         }
       ],
-      activeName: ''
+      activeName: '',
+      openedMenu: []
     }
   },
   created: function () {
     this.init()
     this.$Spin.show()
-    // this.activeName = localStorage.getItem('currentPath')
+    this.activeName = this.$route.name
+    debugger
+    // this.openedMenu.push(this.setOpenMenu(this.menuData, this.activeName))
+    // console.log(this.openedMenu)
+    // this.openedMenu = ['公共功能']
   },
   methods: {
     linkMenu (url) {
@@ -118,28 +129,46 @@ export default {
         access_token: localStorage.getItem('jwtToken')
       }
       let url = '/menu/listMenu'
+      let that = this
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data
+          that.openedMenu.push(that.setOpenMenu(that.menuData, that.activeName))
           this.$Spin.hide()
         }
+      }).finally(val => {
+        that.activeName = that.$route.name
+        // that.openedMenu.push(that.setOpenMenu(that.menuData, that.activeName))
       })
     },
     menuItemClick (val) {
-      // this.$router.push({
-      //   path: val.url,
-      //   query: {
-      //     operation: val.operation
-      //   }
-      // })
-      // this.$store.commit('setOperation', val.operation)
       this.$router.push({
         name: val.name,
         params: {
           operation: val.operation
         }
       })
-      // localStorage.setItem('currentPath', val.url)
+    },
+    // 给选中的菜单赋值
+    setOpenMenu (menu, activeName) {
+      menu.forEach(element => {
+        element.subMenus.forEach(item => {
+          if (item === activeName) {
+            return element.name
+          }
+        })
+      })
+    }
+  },
+  watch: {
+    openedMenu () {
+      this.$refs.side_menu.$children.forEach(element => {
+        element.opened = false
+      })
+      this.$nextTick(() => {
+        this.$refs.side_menu.updateOpened()
+        this.$refs.side_menu.updateActiveName()
+      })
     }
   }
 }

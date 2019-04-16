@@ -78,6 +78,12 @@ export default {
   },
   components: {
     btnManage
+  },
+  watch: {
+    // $route () {
+    //   console.log('**************************')
+    //   console.log($route.path)
+    // }
   }
 }
 </script>
