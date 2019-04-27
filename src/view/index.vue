@@ -8,8 +8,8 @@
         </div>
         <div class="layout-nav">
           <div class="layout-nav-item" v-for="(item, index) in headMenuData" :key="index" @click="linkMenu(item.url)">
-            <Icon type="ios-navigate"></Icon>
-            <span>{{item.text}}</span>
+            <!-- <Icon type="ios-navigate"></Icon>
+            <span>{{item.text}}</span> -->
           </div>
         </div>
         <Dropdown style="float:right" @on-click="setting">
@@ -94,10 +94,9 @@ export default {
     this.init()
     this.$Spin.show()
     this.activeName = this.$route.name
-    debugger
     // this.openedMenu.push(this.setOpenMenu(this.menuData, this.activeName))
     // console.log(this.openedMenu)
-    // this.openedMenu = ['公共功能']
+    this.openedMenu = ['公共功能']
   },
   methods: {
     linkMenu (url) {
@@ -152,11 +151,15 @@ export default {
     // 给选中的菜单赋值
     setOpenMenu (menu, activeName) {
       menu.forEach(element => {
-        element.subMenus.forEach(item => {
-          if (item === activeName) {
-            return element.name
-          }
-        })
+        // console.log('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+        // console.log(element)
+        if (element.subMenus !== undefined || element.subMenus.length !== 0) {
+          element.subMenus.forEach(item => {
+            if (item === activeName) {
+              return element.name
+            }
+          })
+        }
       })
     }
   },
