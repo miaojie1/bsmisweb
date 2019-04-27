@@ -55,12 +55,12 @@ export default new Router({
         {
           path: '/menu/listMenu',
           name: '用户菜单',
-          component: () => import('@/view/common/menuManage')
+          component: () => import('@/view/common/userMenu')
         },
         {
           path: '/department/listDepartmentPage',
           name: '部门管理',
-          component: () => import('@/view/common/userManage')
+          component: () => import('@/view/common/departmentManage')
         },
         {
           path: '/menu/listMenuPage',

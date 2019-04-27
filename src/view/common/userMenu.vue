@@ -1,7 +1,7 @@
 <template>
-  <div class="">
+  <div>
     用户菜单
-  </div>  
+  </div>
 </template>
 
 <script>
