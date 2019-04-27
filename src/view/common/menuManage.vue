@@ -176,12 +176,7 @@ export default {
     }
   },
   created () {
-    console.log('菜单管理')
-    // console.log(this.$route.query.operation)
-    console.log(this.$route.params.operation)
     localStorage.setItem('operation', JSON.stringify(this.$route.params.operation))
-    // console.log(JSON.parse(localStorage.getItem('operation')))
-    // this.buttonList = JSON.parse(localStorage.getItem('operation'))
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
     this.getMenuPage()
   },
@@ -208,15 +203,15 @@ export default {
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$http.postForm('/menu/saveMenu', JSON.stringify(this.formData)).then(res => {
+          this.$http.postForm('/menu/saveMenu', this.formData).then(res => {
             this.showAddModal = false
             if (res.data.state === 200) {
               this.getMenuPage()
-              this.$Message.success('Success!')
+              this.$Message.success('成功添加一条菜单数据!')
             }
           })
         } else {
-          this.$Message.error('Fail!')
+          this.$Message.error('添加菜单数据失败!')
         }
       })
     },
@@ -245,7 +240,6 @@ export default {
       this.formData.rootMenu = status
     },
     handleClickRow (data, index) {
-      console.log('handleClickRow')
       this.currentRowId = data.id
     }
   },

@@ -94,9 +94,6 @@ export default {
     this.init()
     this.$Spin.show()
     this.activeName = this.$route.name
-    // this.openedMenu.push(this.setOpenMenu(this.menuData, this.activeName))
-    // console.log(this.openedMenu)
-    this.openedMenu = ['公共功能']
   },
   methods: {
     linkMenu (url) {
@@ -132,12 +129,10 @@ export default {
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data
-          that.openedMenu.push(that.setOpenMenu(that.menuData, that.activeName))
+          debugger
+          that.setOpenMenu(that.menuData, that.activeName)
           this.$Spin.hide()
         }
-      }).finally(val => {
-        that.activeName = that.$route.name
-        // that.openedMenu.push(that.setOpenMenu(that.menuData, that.activeName))
       })
     },
     menuItemClick (val) {
@@ -151,12 +146,10 @@ export default {
     // 给选中的菜单赋值
     setOpenMenu (menu, activeName) {
       menu.forEach(element => {
-        // console.log('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
-        // console.log(element)
         if (element.subMenus !== undefined || element.subMenus.length !== 0) {
           element.subMenus.forEach(item => {
-            if (item === activeName) {
-              return element.name
+            if (item.name === activeName) {
+              this.openedMenu.push(element.name)
             }
           })
         }
@@ -164,10 +157,8 @@ export default {
     }
   },
   watch: {
+    // 手动更新选中的菜单项
     openedMenu () {
-      this.$refs.side_menu.$children.forEach(element => {
-        element.opened = false
-      })
       this.$nextTick(() => {
         this.$refs.side_menu.updateOpened()
         this.$refs.side_menu.updateActiveName()
