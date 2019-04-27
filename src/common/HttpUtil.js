@@ -8,9 +8,6 @@ axios.interceptors.response.use(
   },
   err => {
     debugger
-    // console.log(err.code)
-    // console.log(err.message)
-    // console.log(err.config)
     if (err.response.status === 400) {
       localStorage.clear()
       Message.info({
