@@ -107,13 +107,6 @@ export default {
         {
           title: '状态',
           key: 'status',
-          // render: (h, params) => {
-          //   if (params.row.status) {
-          //     return '是'
-          //   }
-          //   return '否'
-          //   // return tableFilters.transTrueAndFalse(params.row.status)
-          // }
           render: (h, params) => {
             const row = params.row
             const color = row.status === true ? 'primary' : 'error'
