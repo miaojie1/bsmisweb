@@ -43,11 +43,6 @@ export default new Router({
           component: () => import('@/view/workProcess/temp')
         },
         {
-          path: '/home##',
-          name: '菜单管理',
-          component: () => import('@/view/common/menuManage')
-        },
-        {
           path: '/testbtn',
           name: '测试按钮',
           component: () => import('@/view/test')
@@ -61,6 +56,21 @@ export default new Router({
           path: '/menu/listMenu',
           name: '用户菜单',
           component: () => import('@/view/common/menuManage')
+        },
+        {
+          path: '/department/listDepartmentPage',
+          name: '部门管理',
+          component: () => import('@/view/common/userManage')
+        },
+        {
+          path: '/menu/listMenuPage',
+          name: '菜单管理',
+          component: () => import('@/view/common/menuManage')
+        },
+        {
+          path: '/posting/listPostingPage',
+          name: '公告管理',
+          component: () => import('@/view/common/noticeManage')
         }
       ]
     }
