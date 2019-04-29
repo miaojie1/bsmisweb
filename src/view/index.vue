@@ -141,6 +141,7 @@ export default {
           operation: val.operation
         }
       })
+      localStorage.setItem('operation', JSON.stringify(val.operation))
     },
     // 给选中的菜单赋值
     setOpenMenu (menu, activeName) {

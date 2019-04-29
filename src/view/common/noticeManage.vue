@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import {formatDate} from '../../common/filters/tableFilters.js'
+import {formatDate} from '../../common/filters/dateFilters.js'
 export default {
   data () {
     return {
