@@ -14,7 +14,7 @@ export default {
   },
   created () {
     console.log('用户管理')
-    console.log(this.$route.params.operation)
+    // console.log(this.$route.params.operation)
     localStorage.setItem('operation', JSON.stringify(this.$route.params.operation))
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
   },

@@ -1,6 +1,5 @@
 export default {
   transTrueAndFalse (value) {
-    debugger
     if (value) {
       return '是'
     }

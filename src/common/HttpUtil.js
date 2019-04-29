@@ -3,11 +3,9 @@ var axios = require('axios')
 
 axios.interceptors.response.use(
   res => {
-    debugger
     return res
   },
   err => {
-    debugger
     if (err.response.status === 400) {
       localStorage.clear()
       Message.info({
@@ -106,7 +104,6 @@ export default{
   },
   post: function (url, params) {
     return new Promise((resolve, reject) => {
-      debugger
       // 设置超时时间
       // axios.defaults.retry = 4
       // axios.defaults.retryDelay = 1000
@@ -139,7 +136,6 @@ export default{
   },
   postForm: function (url, params) {
     return new Promise((resolve, reject) => {
-      debugger
       // 设置超时时间
       // axios.defaults.retry = 4
       // axios.defaults.retryDelay = 1000
