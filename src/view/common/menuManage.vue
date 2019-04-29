@@ -1,6 +1,7 @@
 <template>
   <div>
     <btn-manage :buttonList="buttonList"></btn-manage>
+    <Button @click="edit">测试修改</Button>
     <Table
       border
       highlight-row
@@ -22,9 +23,6 @@
         </FormItem>
         <FormItem label="URL" prop="url">
           <Input v-model="formData.url" placeholder="URL" />
-        </FormItem>
-        <FormItem label="修改时间" prop="modificationDate">
-          <Input v-model="formData.modificationDate" placeholder="修改时间" />
         </FormItem>
         <FormItem label="状态" prop="status">
           <i-switch v-model="formData.status" @on-change="changeStatus">
@@ -54,6 +52,43 @@
       </div>
     </Modal>
     <Modal
+      v-model="showEditModal"
+      title="添加菜单">
+      <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
+        <FormItem label="菜单项" prop="name">
+          <Input v-model="formData.name" placeholder="菜单项" />
+        </FormItem>
+        <FormItem label="URL" prop="url">
+          <Input v-model="formData.url" placeholder="URL" />
+        </FormItem>
+        <FormItem label="状态" prop="status">
+          <i-switch v-model="formData.status" @on-change="changeStatus">
+            <span slot="open">是</span>
+            <span slot="close">否</span>
+          </i-switch>
+        </FormItem>
+        <FormItem label="备注" prop="remark">
+          <Input v-model="formData.remark" placeholder="备注"/>
+        </FormItem>
+        <FormItem label="是否根菜单" prop="rootMenu">
+          <i-switch v-model="formData.rootMenu" @on-change="changeRootMenu">
+            <span slot="open">是</span>
+            <span slot="close">否</span>
+          </i-switch>
+        </FormItem>
+        <FormItem label="父菜单" prop="parentMenuId">
+          <Input v-model="formData.parentMenuId" placeholder="父菜单" />
+        </FormItem>
+        <FormItem label="版本" prop="version">
+          <Input v-model="formData.version" placeholder="版本" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmEdit('formData')">提交</Button>
+        <Button @click="cancelEdit('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
       v-model="showDeleteModal"
       width="360">
       <p slot="header" style="color:#f60;text-align:center">
@@ -74,7 +109,7 @@
 
 <script>
 import btnManage from '../../components/btnManage'
-// import tableFilters from '../../common/filters/tableFilters'
+import {getDate} from '../../common/filters/dateFilters.js'
 export default {
   data () {
     return {
@@ -94,19 +129,50 @@ export default {
         },
         {
           title: '创建时间',
-          key: 'createDate'
+          key: 'createDate',
+          width: 100,
+          render: (h, params) => {
+            const createDate = params.row.createDate
+            if (createDate === null || createDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', createDate.substring(0, 10))
+            }
+          }
         },
         {
           title: '修改时间',
-          key: 'modificationDate'
+          key: 'modificationDate',
+          width: 100,
+          render: (h, params) => {
+            const modificationDate = params.row.modificationDate
+            if (modificationDate === null || modificationDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', modificationDate.substring(0, 10))
+            }
+          }
         },
-        // {
-        //   title: '按钮',
-        //   key: 'operation'
-        // },
+        {
+          title: '按钮',
+          key: 'operation',
+          render: (h, params) => {
+            const opeval = params.row.operation
+            let btns = ''
+            if (opeval === '') {
+              return h('span', '无')
+            } else {
+              opeval.forEach(element => {
+                btns = btns + element.buttonId + '; '
+              })
+              return h('span', btns)
+            }
+          }
+        },
         {
           title: '状态',
           key: 'status',
+          width: 120,
           render: (h, params) => {
             const row = params.row
             const color = row.status === true ? 'primary' : 'error'
@@ -126,6 +192,7 @@ export default {
         {
           title: '是否根菜单',
           key: 'rootMenu',
+          width: 120,
           render: (h, params) => {
             const row = params.row
             const color = row.rootMenu === true ? 'primary' : 'error'
@@ -139,7 +206,7 @@ export default {
           }
         },
         {
-          title: '父菜单',
+          title: '父菜单ID',
           key: 'parentMenuId'
         },
         {
@@ -149,43 +216,55 @@ export default {
       ],
       menuData: [],
       formData: {
-        name: '测试1',
-        url: '/test1',
+        name: '',
+        url: '',
         createDate: '',
         modifiationDate: '',
         status: true,
         remark: '',
         rootMenu: false,
-        parentMenuId: '1',
+        parentMenuId: '',
         version: ''
       },
+      // 校验规则
       ruleValidate: {
         name: [
           { required: true, message: '菜单项不可以为空', trigger: 'blur' }
         ]
-        // status: [
-        //   { required: true, message: '状态不可以为空', trigger: 'blur' }
-        // ],
-        // rootMenu: [
-        //   { required: true, message: '是否根菜单不可以为空', trigger: 'blur' }
-        // ]
       },
       showAddModal: false,
       showDeleteModal: false,
-      currentRowId: ''
+      showEditModal: false,
+      // 当前选择行的ID
+      currentRowId: '',
+      // 当前行的数据
+      currentRow: ''
     }
   },
   created () {
-    localStorage.setItem('operation', JSON.stringify(this.$route.params.operation))
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
     this.getMenuPage()
   },
   methods: {
     add () {
+      this.formData.createDate = getDate(new Date())
       this.showAddModal = true
     },
     remove () {
+      if (this.currentRowId === '') {
+        this.$Message.error('请选择要删除的数据！')
+        return
+      }
       this.showDeleteModal = true
+    },
+    edit () {
+      if (this.currentRow === '') {
+        this.$Message.error('请选择要编辑的数据！')
+        return
+      }
+      this.showEditModal = true
+      this.formData = this.currentRow
+      this.formData.modificationDate = getDate(new Date())
     },
     confirmDelete () {
       let data = {
@@ -203,17 +282,40 @@ export default {
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$http.postForm('/menu/saveMenu', this.formData).then(res => {
+          this.$http.postForm('/menu/saveMenu?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
-            if (res.data.state === 200) {
+            if (res.data.status === true) {
               this.getMenuPage()
-              this.$Message.success('成功添加一条菜单数据!')
+              this.$Message.success(res.data.message)
+            } else {
+              this.$Message.error(res.data.message)
             }
           })
         } else {
-          this.$Message.error('添加菜单数据失败!')
+          this.$Message.error('表单数据校验失败!')
         }
       })
+    },
+    confirmEdit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          this.$http.postForm('/menu/saveMenu?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
+            this.showEditModal = false
+            if (res.data.status === true) {
+              this.getMenuPage()
+              this.$Message.success(res.data.message)
+            } else {
+              this.$Message.error(res.data.message)
+            }
+          })
+        } else {
+          this.$Message.error('表单数据校验失败!')
+        }
+      })
+    },
+    cancelEdit (name) {
+      this.$refs[name].resetFields()
+      this.showEditModal = false
     },
     cancelAdd (name) {
       this.$refs[name].resetFields()
@@ -223,12 +325,11 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let pageNo = '0'
-      let pageSize = '20'
+      let pageNo = 0
+      let pageSize = 20
       let url = '/menu/listMenuPage/pageNo/' + pageNo + '/pageSize/' + pageSize
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          // console.log(res)
           this.menuData = res.data.content
         }
       })
@@ -241,6 +342,7 @@ export default {
     },
     handleClickRow (data, index) {
       this.currentRowId = data.id
+      this.currentRow = data
     }
   },
   components: {

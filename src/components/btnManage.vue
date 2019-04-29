@@ -27,7 +27,7 @@ export default {
           this.addBtn = true
         } else if (element.buttonId === 'editBtn') {
           this.editBtn = true
-        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel') {
+        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
           this.deleteBtn = true
         }
       })
