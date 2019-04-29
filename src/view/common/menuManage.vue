@@ -40,7 +40,9 @@
           </i-switch>
         </FormItem>
         <FormItem label="父菜单" prop="parentMenuId">
-          <Input v-model="formData.parentMenuId" placeholder="父菜单" />
+          <Select v-model="formData.parentMenuId">
+            <Option v-for="item in menuData" :value="item.id" :key="item.id">{{ item.name }}</Option>
+          </Select>
         </FormItem>
         <FormItem label="版本" prop="version">
           <Input v-model="formData.version" placeholder="版本" />
@@ -77,7 +79,9 @@
           </i-switch>
         </FormItem>
         <FormItem label="父菜单" prop="parentMenuId">
-          <Input v-model="formData.parentMenuId" placeholder="父菜单" />
+          <Select v-model="formData.parentMenuId">
+            <Option v-for="item in menuData" :value="item.id" :key="item.id">{{ item.name }}</Option>
+          </Select>
         </FormItem>
         <FormItem label="版本" prop="version">
           <Input v-model="formData.version" placeholder="版本" />
@@ -206,8 +210,16 @@ export default {
           }
         },
         {
-          title: '父菜单ID',
+          title: '父菜单',
           key: 'parentMenuId'
+          // render: (h, params) => {
+          //   const superDep = params.row.superiorDepartment
+          //   if (superDep === null || superDep === '') {
+          //     return h('span', '无')
+          //   } else {
+          //     return h('span', superDep.name)
+          //   }
+          // }
         },
         {
           title: '版本',
