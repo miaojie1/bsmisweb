@@ -129,7 +129,6 @@ export default {
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data
-          debugger
           that.setOpenMenu(that.menuData, that.activeName)
           this.$Spin.hide()
         }

@@ -228,7 +228,7 @@ export default {
       let url = '/menu/listMenuPage/pageNo/' + pageNo + '/pageSize/' + pageSize
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          console.log(res)
+          // console.log(res)
           this.menuData = res.data.content
         }
       })
