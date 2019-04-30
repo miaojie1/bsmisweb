@@ -23,11 +23,12 @@ export default {
     // 根据父组件的传值来确定用户的按钮权限
     showBtn (buttonList) {
       buttonList.forEach(element => {
-        if (element.buttonId === 'addBtn') {
+        var str = element.buttonId
+        if (str.toUpperCase().indexOf('AddBtn'.toUpperCase()) >= 0) {
           this.addBtn = true
-        } else if (element.buttonId === 'editBtn') {
+        } else if (str.toUpperCase().indexOf('EditBtn'.toUpperCase()) >= 0) {
           this.editBtn = true
-        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel') {
+        } else if (str.toUpperCase().indexOf('DelBtn'.toUpperCase()) >= 0 || str.toUpperCase().indexOf('BatchDel'.toUpperCase()) >= 0) {
           this.deleteBtn = true
         }
       })
