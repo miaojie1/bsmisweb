@@ -1,19 +1,48 @@
 <template>
   <div>
-    <btn-manage :buttonList="buttonList"></btn-manage>
-    <Button @click="edit">测试修改</Button>
+    <Row :gutter="16">
+      <i-col span="8">
+        <Input suffix="ios-search" placeholder="请输入菜单名称查询···" v-model="searchData"/>
+      </i-col>
+      <i-col span="8">
+        <Button @click="search" type="primary">查询</Button>
+        <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
+        <Button @click="edit" type="primary" style="marign-left: 10px">测试修改</Button>
+      </i-col>
+    </Row>
+    <!-- <btn-manage :buttonList="buttonList"></btn-manage> -->
     <Table
       border
       highlight-row
+      ref="menuTable"
       :columns="columns"
       :data="menuData"
       style="margin-top: 30px"
-      size="small"
-      @on-row-click="handleClickRow">
+      size="small">
       <template slot-scope="{ row }" slot="name">
         <strong>{{ row.name }}</strong>
       </template>
+      <template slot="action" slot-scope="{ row, index }">
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="showAddBtn" @click="add(row, index)">增加</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
+      </template>
     </Table>
+    <div style="margin: 10px;overflow: hidden">
+      <div style="float: right;">
+        <Page
+          show-total
+          show-elevator
+          show-sizer
+          :total="menuDataTotal"
+          :current="pageNo+1"
+          :page-size="pageSize"
+          :page-size-opts=[5,10,15]
+          @on-change="changePageNo"
+          @on-page-size-change="changePageSize"
+          ></Page>
+      </div>
+    </div>
     <Modal
       v-model="showAddModal"
       title="添加菜单">
@@ -55,7 +84,7 @@
     </Modal>
     <Modal
       v-model="showEditModal"
-      title="添加菜单">
+      title="修改菜单">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
         <FormItem label="菜单项" prop="name">
           <Input v-model="formData.name" placeholder="菜单项" />
@@ -113,7 +142,7 @@
 
 <script>
 import btnManage from '../../components/btnManage'
-import {getDate} from '../../common/filters/dateFilters.js'
+// import {getDate} from '../../common/filters/dateFilters.js'
 export default {
   data () {
     return {
@@ -121,15 +150,18 @@ export default {
       columns: [
         {
           title: 'ID',
-          key: 'id'
+          key: 'id',
+          width: 50
         },
         {
           title: '菜单项',
-          key: 'name'
+          key: 'name',
+          width: 100
         },
         {
           title: 'URL',
-          key: 'url'
+          key: 'url',
+          width: 100
         },
         {
           title: '创建时间',
@@ -160,6 +192,7 @@ export default {
         {
           title: '按钮',
           key: 'operation',
+          width: 100,
           render: (h, params) => {
             const opeval = params.row.operation
             let btns = ''
@@ -191,7 +224,8 @@ export default {
         },
         {
           title: '备注',
-          key: 'remark'
+          key: 'remark',
+          width: 100
         },
         {
           title: '是否根菜单',
@@ -211,7 +245,8 @@ export default {
         },
         {
           title: '父菜单',
-          key: 'parentMenuId'
+          key: 'parentMenuId',
+          width: 100
           // render: (h, params) => {
           //   const superDep = params.row.superiorDepartment
           //   if (superDep === null || superDep === '') {
@@ -223,15 +258,57 @@ export default {
         },
         {
           title: '版本',
-          key: 'version'
+          key: 'version',
+          width: 50
+        },
+        {
+          title: '操作',
+          slot: 'action',
+          width: 150,
+          fixed: 'right'
         }
+        // {
+        //   title: 'Action',
+        //   key: 'action',
+        //   width: 150,
+        //   align: 'center',
+        //   render: (h, params) => {
+        //     return h('div', [
+        //       h('Button', {
+        //         props: {
+        //           type: 'primary',
+        //           size: 'small'
+        //         },
+        //         style: {
+        //           marginRight: '5px'
+        //         },
+        //         on: {
+        //           click: () => {
+        //             this.show(params.index)
+        //           }
+        //         }
+        //       }, 'View'),
+        //       h('Button', {
+        //         props: {
+        //           type: 'error',
+        //           size: 'small'
+        //         },
+        //         on: {
+        //           click: () => {
+        //             this.remove(params.index)
+        //           }
+        //         }
+        //       }, 'Delete')
+        //     ])
+        //   }
+        // }
       ],
       menuData: [],
       formData: {
         name: '',
         url: '',
-        createDate: '',
-        modifiationDate: '',
+        // createDate: '',
+        // modifiationDate: '',
         status: true,
         remark: '',
         rootMenu: false,
@@ -247,10 +324,17 @@ export default {
       showAddModal: false,
       showDeleteModal: false,
       showEditModal: false,
+      showAddBtn: false,
+      showDeleteBtn: false,
+      showEditBtn: false,
       // 当前选择行的ID
       currentRowId: '',
-      // 当前行的数据
-      currentRow: ''
+      // 分页使用
+      pageNo: 0,
+      pageSize: 5,
+      menuDataTotal: 0,
+      // 查询条件
+      searchData: ''
     }
   },
   created () {
@@ -258,25 +342,19 @@ export default {
     this.getMenuPage()
   },
   methods: {
-    add () {
-      this.formData.createDate = getDate(new Date())
+    /**
+     * 以下为增加修改删除的弹框控制方法以及提交后台方法
+     */
+    add (index) {
       this.showAddModal = true
     },
-    remove () {
-      if (this.currentRowId === '') {
-        this.$Message.error('请选择要删除的数据！')
-        return
-      }
+    remove (row, index) {
+      this.currentRowId = row.id
       this.showDeleteModal = true
     },
-    edit () {
-      if (this.currentRow === '') {
-        this.$Message.error('请选择要编辑的数据！')
-        return
-      }
+    edit (row, index) {
+      this.formData = row
       this.showEditModal = true
-      this.formData = this.currentRow
-      this.formData.modificationDate = getDate(new Date())
     },
     confirmDelete () {
       let data = {
@@ -286,7 +364,7 @@ export default {
       this.$http.post(url, data).then(res => {
         this.showDeleteModal = false
         if (res.data.status === true) {
-          this.$Message.success('成功删除一条菜单数据!')
+          this.$Message.success(res.data.message)
           this.getMenuPage()
         }
       })
@@ -327,22 +405,31 @@ export default {
     },
     cancelEdit (name) {
       this.$refs[name].resetFields()
+      this.$refs.menuData.clearCurrentRow()
       this.showEditModal = false
+      this.$Message.info('您已取消编辑！')
     },
     cancelAdd (name) {
       this.$refs[name].resetFields()
       this.showAddModal = false
+      this.$Message.info('您已取消增加！')
     },
+    cancelDelete () {
+      this.showDeleteModal = false
+      this.currentRowId = ''
+      this.$refs.menuTable.clearCurrentRow()
+      this.$Message.info('您已取消删除！')
+    },
+    // 获取菜单资源列表
     getMenuPage () {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let pageNo = 0
-      let pageSize = 20
-      let url = '/menu/listMenuPage/pageNo/' + pageNo + '/pageSize/' + pageSize
+      let url = '/menu/listMenuPage/pageNo/' + this.pageNo + '/pageSize/' + this.pageSize
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data.content
+          this.menuDataTotal = parseInt(res.data.totalElements)
         }
       })
     },
@@ -352,19 +439,35 @@ export default {
     changeRootMenu (status) {
       this.formData.rootMenu = status
     },
-    handleClickRow (data, index) {
-      this.currentRowId = data.id
-      this.currentRow = data
+    // 分页
+    changePageNo (pageNo) {
+      this.pageNo = pageNo - 1
+    },
+    changePageSize (pageSize) {
+      this.pageSize = pageSize
     }
   },
   components: {
     btnManage
   },
   watch: {
-    // $route () {
-    //   console.log('**************************')
-    //   console.log($route.path)
-    // }
+    pageNo: function () {
+      this.getMenuPage()
+    },
+    pageSize: function () {
+      this.getMenuPage()
+    },
+    buttonList: function (val) {
+      val.forEach(element => {
+        if (element.buttonId === 'addBtn') {
+          this.showAddBtn = true
+        } else if (element.buttonId === 'editBtn') {
+          this.showEditBtn = true
+        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
+          this.showDeleteBtn = true
+        }
+      })
+    }
   }
 }
 </script>

@@ -1,7 +1,17 @@
 <template>
   <div>
-    <btn-manage :buttonList="buttonList"></btn-manage>
-    <Button @click="add">测试增加</Button>
+    <!-- <btn-manage :buttonList="buttonList"></btn-manage> -->
+    <Row :gutter="16">
+      <i-col span="8">
+        <Input suffix="ios-search" placeholder="请输入部门名称查询···" v-model="searchData"/>
+      </i-col>
+      <i-col span="8">
+        <Button @click="search" type="primary">查询</Button>
+        <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
+        <Button @click="edit" type="primary" style="marign-left: 10px">测试修改</Button>
+      </i-col>
+    </Row>
+    <!-- <Button @click="add">测试增加</Button> -->
     <Table
       border
       highlight-row
@@ -13,7 +23,27 @@
       <template slot-scope="{ row }" slot="name">
         <strong>{{ row.name }}</strong>
       </template>
+      <template slot="action" slot-scope="{ row, index }">
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="showAddBtn" @click="add()">增加</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
+      </template>
     </Table>
+    <div style="margin: 10px;overflow: hidden">
+      <div style="float: right;">
+        <Page
+          show-total
+          show-elevator
+          show-sizer
+          :total="departDataTotal"
+          :current="pageNo+1"
+          :page-size="pageSize"
+          :page-size-opts=[5,10,15]
+          @on-change="changePageNo"
+          @on-page-size-change="changePageSize"
+          ></Page>
+      </div>
+    </div>
     <Modal
       v-model="showAddModal"
       title="添加部门">
@@ -93,7 +123,7 @@
 
 <script>
 import btnManage from '../../components/btnManage'
-import {getDate} from '../../common/filters/dateFilters.js'
+// import {getDate} from '../../common/filters/dateFilters.js'
 export default {
   data () {
     return {
@@ -158,12 +188,21 @@ export default {
         {
           title: '版本',
           key: 'version'
+        },
+        {
+          title: '操作',
+          slot: 'action',
+          width: 150,
+          fixed: 'right'
         }
       ],
       departData: [],
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
+      showAddBtn: false,
+      showEditBtn: false,
+      showDeleteBtn: false,
       // formData: [
       //   name: '',
       //   description: ''
@@ -178,7 +217,10 @@ export default {
         ]
       },
       currentRowId: '',
-      currentRow: ''
+      currentRow: '',
+      pageNo: 0,
+      pageSize: 5,
+      departDataTotal: 0
     }
   },
   created: function () {
@@ -187,15 +229,13 @@ export default {
   },
   methods: {
     add () {
-      this.formData.createDate = getDate(new Date())
-      this.formData.modificationDate = ''
       this.showAddModal = true
     },
-    edit () {
-      this.formData.modificationDate = getDate(new Date())
+    edit (row, index) {
+      this.formData = row
       this.showEditModal = true
     },
-    remove () {
+    remove (row, index) {
       this.showDeleteModal = true
     },
     confirmAdd (name) {
@@ -218,31 +258,65 @@ export default {
         }
       })
     },
-    cancelAdd () {},
+    cancelAdd () {
+      this.showAddModal = false
+      this.$Message.info('您已取消添加！')
+    },
     confirmEdit () {},
-    cancelEdit () {},
+    cancelEdit () {
+      this.showEditModal = false
+      this.$Message.info('您已取消编辑！')
+    },
     confirmDelete () {},
-    cancelDelete () {},
+    cancelDelete () {
+      this.showDeleteModal = false
+      this.$Message.info('您已取消删除！')
+    },
     getDepartData () {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let pageNo = 0
-      let pageSize = 20
-      let url = '/department/listDepartmentPage/pageSize/' + pageSize + '/pageNo/' + pageNo
+      let url = '/department/listDepartmentPage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.departData = res.data.content
+          this.departDataTotal = res.data.totalElements
         }
       })
     },
     handleClickRow (data, index) {
       this.currentRowId = data.id
       this.currentRow = data
+    },
+    // 分页
+    changePageNo (pageNo) {
+      this.pageNo = pageNo - 1
+    },
+    changePageSize (pageSize) {
+      this.pageSize = pageSize
     }
   },
   components: {
     btnManage
+  },
+  watch: {
+    pageNo: function () {
+      this.getDepartData()
+    },
+    pageSize: function () {
+      this.getDepartData()
+    },
+    buttonList: function (val) {
+      val.forEach(element => {
+        if (element.buttonId === 'addBtn') {
+          this.showAddBtn = true
+        } else if (element.buttonId === 'editBtn') {
+          this.showEditBtn = true
+        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
+          this.showDeleteBtn = true
+        }
+      })
+    }
   }
 }
 </script>
