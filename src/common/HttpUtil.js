@@ -39,9 +39,9 @@ export default{
       axios({
         method: 'GET',
         url: url,
-        headers: {
-          'JWTToken': localStorage.getItem('jwtToken')
-        },
+        // headers: {
+        //   'JWTToken': localStorage.getItem('jwtToken')
+        // },
         params: params,
         baseURL: root,
         withCredentials: true
@@ -112,7 +112,6 @@ export default{
         url: url,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
-          // 'Authorization': localStorage.getItem('jwtToken')
         },
         data: params,
         transformRequest: [function (data) {
@@ -146,6 +145,31 @@ export default{
         headers: {
           'Content-Type': 'application/json'
         },
+        data: params,
+        baseURL: root,
+        withCredentials: true
+      }).then((res) => {
+        if (this.setToken(res)) {
+          resolve(res)
+        }
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  },
+  postAndAttach: function (url, params) {
+    return new Promise((resolve, reject) => {
+      // 设置超时时间
+      // axios.defaults.retry = 4
+      // axios.defaults.retryDelay = 1000
+      // axios.defaults.timeout = 20000
+      // 添加请求拦截器
+      axios({
+        method: 'POST',
+        url: url,
+        // headers: {
+        //   'Content-Type': 'multipart/form-data'
+        // },
         data: params,
         baseURL: root,
         withCredentials: true

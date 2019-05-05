@@ -136,10 +136,7 @@ export default {
     },
     menuItemClick (val) {
       this.$router.push({
-        name: val.name,
-        params: {
-          operation: val.operation
-        }
+        name: val.name
       })
       localStorage.setItem('operation', JSON.stringify(val.operation))
     },
