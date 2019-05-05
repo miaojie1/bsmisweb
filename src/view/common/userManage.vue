@@ -269,7 +269,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/employee/listEmployeePage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo
+      let url = '/employee/listEmployeePage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo + '?username=' + this.searchData
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.employeeData = res.data.content
@@ -290,16 +290,7 @@ export default {
       })
     },
     search () {
-      let data = {
-        access_token: localStorage.getItem('jwtToken')
-      }
-      let url = '/employee/listEmployeePage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo + '?username=' + this.searchData
-      this.$http.post(url, data).then(res => {
-        if (res.status === 200) {
-          this.employeeData = res.data.content
-          this.employeeDataTotal = parseInt(res.data.totalElements)
-        }
-      })
+      this.getEmployeePage()
     },
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
