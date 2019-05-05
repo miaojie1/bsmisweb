@@ -10,7 +10,6 @@
         <Button @click="edit" type="primary" style="marign-left: 10px">测试修改</Button>
       </i-col>
     </Row>
-    <!-- <btn-manage :buttonList="buttonList"></btn-manage> -->
     <Table
       border
       highlight-row
@@ -23,7 +22,6 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="showAddBtn" @click="add(row, index)">增加</Button>
         <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
       </template>
@@ -70,7 +68,7 @@
         </FormItem>
         <FormItem label="父菜单" prop="parentMenuId">
           <Select v-model="formData.parentMenuId">
-            <Option v-for="item in menuData" :value="item.id" :key="item.id">{{ item.name }}</Option>
+            <Option v-for="item in allMenuData" :value="item.id" :key="item.id">{{ item.name }}</Option>
           </Select>
         </FormItem>
         <FormItem label="版本" prop="version">
@@ -267,43 +265,9 @@ export default {
           width: 150,
           fixed: 'right'
         }
-        // {
-        //   title: 'Action',
-        //   key: 'action',
-        //   width: 150,
-        //   align: 'center',
-        //   render: (h, params) => {
-        //     return h('div', [
-        //       h('Button', {
-        //         props: {
-        //           type: 'primary',
-        //           size: 'small'
-        //         },
-        //         style: {
-        //           marginRight: '5px'
-        //         },
-        //         on: {
-        //           click: () => {
-        //             this.show(params.index)
-        //           }
-        //         }
-        //       }, 'View'),
-        //       h('Button', {
-        //         props: {
-        //           type: 'error',
-        //           size: 'small'
-        //         },
-        //         on: {
-        //           click: () => {
-        //             this.remove(params.index)
-        //           }
-        //         }
-        //       }, 'Delete')
-        //     ])
-        //   }
-        // }
       ],
       menuData: [],
+      allMenuData: [],
       formData: {
         name: '',
         url: '',
@@ -347,6 +311,7 @@ export default {
      */
     add (index) {
       this.showAddModal = true
+      this.getMenuList()
     },
     remove (row, index) {
       this.currentRowId = row.id
@@ -420,16 +385,33 @@ export default {
       this.$refs.menuTable.clearCurrentRow()
       this.$Message.info('您已取消删除！')
     },
+    search () {
+      this.pageNo = 0
+      this.getMenuPage()
+    },
     // 获取菜单资源列表
     getMenuPage () {
       let data = {
-        access_token: localStorage.getItem('jwtToken')
+        access_token: localStorage.getItem('jwtToken'),
+        paramJson: this.searchData
       }
       let url = '/menu/listMenuPage/pageNo/' + this.pageNo + '/pageSize/' + this.pageSize
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data.content
           this.menuDataTotal = parseInt(res.data.totalElements)
+        }
+      })
+    },
+    // 获取所有的资源列表 不分页
+    getMenuList () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/menu/listAllMenus'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.allMenuData = res.data.content
         }
       })
     },

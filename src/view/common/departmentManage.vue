@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- <btn-manage :buttonList="buttonList"></btn-manage> -->
     <Row :gutter="16">
       <i-col span="8">
         <Input suffix="ios-search" placeholder="请输入部门名称查询···" v-model="searchData"/>
@@ -8,10 +7,9 @@
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
         <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
-        <Button @click="edit" type="primary" style="marign-left: 10px">测试修改</Button>
+        <Button @click="add" type="primary" style="marign-left: 10px">测试增加</Button>
       </i-col>
     </Row>
-    <!-- <Button @click="add">测试增加</Button> -->
     <Table
       border
       highlight-row
@@ -24,7 +22,6 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="showAddBtn" @click="add()">增加</Button>
         <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
       </template>
@@ -85,7 +82,9 @@
           <Input v-model="formData.description" placeholder="描述" />
         </FormItem>
         <FormItem label="上级部门" prop="superiorDepartment">
-          <Input v-model="formData.superiorDepartment" placeholder="上级部门" />
+          <Select v-model="superDep.id">
+            <Option v-for="item in departData" :value="item" :key="item.id">{{ item.name }}</Option>
+          </Select>
         </FormItem>
         <FormItem label="备注" prop="remark">
           <Input v-model="formData.remark" placeholder="备注" />
@@ -197,18 +196,21 @@ export default {
         }
       ],
       departData: [],
+      superDep: {},
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
       showAddBtn: false,
       showEditBtn: false,
       showDeleteBtn: false,
-      // formData: [
-      //   name: '',
-      //   description: ''
-      // ],
+      searchData: '',
       formData: {
-        // name: ''
+        name: '',
+        description: '',
+        superiorDepartment: '',
+        remark: '',
+        departmentPositions: '',
+        version: 1
       },
       // 校验规则
       ruleValidate: {
@@ -233,6 +235,8 @@ export default {
     },
     edit (row, index) {
       this.formData = row
+      const superiorDepartment = row.superiorDepartment
+      this.superDep = superiorDepartment.id
       this.showEditModal = true
     },
     remove (row, index) {
@@ -264,6 +268,7 @@ export default {
     },
     confirmEdit () {},
     cancelEdit () {
+      this.formData.superiorDepartment = this.superDep
       this.showEditModal = false
       this.$Message.info('您已取消编辑！')
     },
@@ -272,9 +277,14 @@ export default {
       this.showDeleteModal = false
       this.$Message.info('您已取消删除！')
     },
+    search () {
+      this.pageNo = 0
+      this.getDepartData()
+    },
     getDepartData () {
       let data = {
-        access_token: localStorage.getItem('jwtToken')
+        access_token: localStorage.getItem('jwtToken'),
+        departmentName: this.searchData
       }
       let url = '/department/listDepartmentPage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo
       this.$http.post(url, data).then(res => {
@@ -287,6 +297,7 @@ export default {
     handleClickRow (data, index) {
       this.currentRowId = data.id
       this.currentRow = data
+      this.formData = data
     },
     // 分页
     changePageNo (pageNo) {
@@ -309,7 +320,7 @@ export default {
     buttonList: function (val) {
       val.forEach(element => {
         if (element.buttonId === 'addBtn') {
-          this.showAddBtn = true
+          // this.showAddBtn = true
         } else if (element.buttonId === 'editBtn') {
           this.showEditBtn = true
         } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
