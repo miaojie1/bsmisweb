@@ -6,6 +6,7 @@
       </i-col>
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
+        <Button @click="reset" type="primary">重置</Button>
         <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
       </i-col>
     </Row>
@@ -59,7 +60,7 @@
         <FormItem label="手机号码" prop="mobile">
           <Input v-model="formData.mobile" placeholder="手机号码"/>
         </FormItem>
-        <FormItem label="部门" prop="department">
+        <!-- <FormItem label="部门" prop="department">
           <Select style="width:200px" v-model="formData.department">
             <Option v-for="item in departmentItem" :value="item.id" :key="item.id" name="department">{{item.name }}
             </Option>
@@ -70,7 +71,7 @@
         </FormItem>
         <FormItem label="员工职位" prop="DepartmentPosition">
           <Input v-model="formData.DepartmentPosition" placeholder="员工职位"/>
-        </FormItem>
+        </FormItem> -->
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -217,10 +218,10 @@ export default {
         password: '',
         sex: '',
         email: '',
-        mobile: '',
-        department: '',
-        employeeStatus: '',
-        DepartmentPosition: ''
+        mobile: ''
+        // department: '',
+        // employeeStatus: '',
+        // DepartmentPosition: ''
       },
       ruleValidate: {
         username: [
@@ -289,6 +290,16 @@ export default {
       })
     },
     search () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/employee/listEmployeePage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo + '?username=' + this.searchData
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.employeeData = res.data.content
+          this.employeeDataTotal = parseInt(res.data.totalElements)
+        }
+      })
     },
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
@@ -354,6 +365,11 @@ export default {
       this.currentRowId = ''
       this.$refs.employeeTable.clearCurrentRow()
       this.$Message.info('您已取消删除！')
+    },
+    // 重置查询条件
+    reset () {
+      this.searchData = ''
+      this.getEmployeePage()
     },
     // 分页
     changePageNo (pageNo) {
