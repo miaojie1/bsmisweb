@@ -1,8 +1,8 @@
 <template>
   <div class="btnContainer">
-    <Button type="primary" id="addBtn" v-show="addBtn" @click="add">增加</Button>
-    <Button type="primary" id="editBtn" v-show="editBtn" @click="edit">修改</Button>
-    <Button type="primary" id="deleteBtn" v-show="deleteBtn" @click="remove">删除</Button>
+    <Button type="primary" size="small" id="addBtn" v-show="addBtn" @click="add">增加</Button>
+    <Button type="primary" size="small" id="editBtn" v-show="editBtn" @click="edit">修改</Button>
+    <Button type="error" size="small" id="deleteBtn" v-show="deleteBtn" @click="remove">删除</Button>
   </div>
 </template>
 
@@ -23,12 +23,11 @@ export default {
     // 根据父组件的传值来确定用户的按钮权限
     showBtn (buttonList) {
       buttonList.forEach(element => {
-        var str = element.buttonId
-        if (str.toUpperCase().indexOf('AddBtn'.toUpperCase()) >= 0) {
+        if (element.buttonId === 'addBtn') {
           this.addBtn = true
-        } else if (str.toUpperCase().indexOf('EditBtn'.toUpperCase()) >= 0) {
+        } else if (element.buttonId === 'editBtn') {
           this.editBtn = true
-        } else if (str.toUpperCase().indexOf('DelBtn'.toUpperCase()) >= 0 || str.toUpperCase().indexOf('BatchDel'.toUpperCase()) >= 0) {
+        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
           this.deleteBtn = true
         }
       })
@@ -38,6 +37,7 @@ export default {
      */
     add () {
       this.$parent.add()
+      // this.$emit('add')
     },
     edit () {
       this.$parent.edit()

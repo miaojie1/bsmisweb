@@ -1,31 +1,27 @@
 import {Message} from 'iview'
 var axios = require('axios')
-
 axios.interceptors.response.use(
   res => {
-    debugger
     return res
   },
   err => {
     debugger
     if (err.response.status === 400) {
-      localStorage.clear()
+      // localStorage.clear()
       Message.info({
         content: '用户名或者密码错误！',
         duration: 10,
         closable: true
       })
-      this.$router.replace({
-        path: '/login'
-      })
+      this.$router.push('/')
     } else if (err.response.status === 401) {
-      localStorage.clear()
+      // localStorage.clear()
       Message.info({
         content: '登录信息失效，请重新登录！',
         duration: 10,
         closable: true
       })
-      this.$router.replace({
+      this.$router.push({
         path: '/login'
       })
     }
@@ -43,9 +39,9 @@ export default{
       axios({
         method: 'GET',
         url: url,
-        headers: {
-          'JWTToken': localStorage.getItem('jwtToken')
-        },
+        // headers: {
+        //   'JWTToken': localStorage.getItem('jwtToken')
+        // },
         params: params,
         baseURL: root,
         withCredentials: true
@@ -106,7 +102,6 @@ export default{
   },
   post: function (url, params) {
     return new Promise((resolve, reject) => {
-      debugger
       // 设置超时时间
       // axios.defaults.retry = 4
       // axios.defaults.retryDelay = 1000
@@ -139,7 +134,6 @@ export default{
   },
   postForm: function (url, params) {
     return new Promise((resolve, reject) => {
-      debugger
       // 设置超时时间
       // axios.defaults.retry = 4
       // axios.defaults.retryDelay = 1000
@@ -149,8 +143,33 @@ export default{
         method: 'POST',
         url: url,
         headers: {
-          'Content-Type': 'application/json; charset=utf-8'
+          'Content-Type': 'application/json'
         },
+        data: params,
+        baseURL: root,
+        withCredentials: true
+      }).then((res) => {
+        if (this.setToken(res)) {
+          resolve(res)
+        }
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  },
+  postAndAttach: function (url, params) {
+    return new Promise((resolve, reject) => {
+      // 设置超时时间
+      // axios.defaults.retry = 4
+      // axios.defaults.retryDelay = 1000
+      // axios.defaults.timeout = 20000
+      // 添加请求拦截器
+      axios({
+        method: 'POST',
+        url: url,
+        // headers: {
+        //   'Content-Type': 'multipart/form-data'
+        // },
         data: params,
         baseURL: root,
         withCredentials: true

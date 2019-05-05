@@ -71,6 +71,11 @@ export default new Router({
           path: '/posting/listPostingPage',
           name: '公告管理',
           component: () => import('@/view/common/noticeManage')
+        },
+        {
+          path: '/role/listRolePage',
+          name: '角色管理',
+          component: () => import('@/view/common/roleManage')
         }
       ]
     }

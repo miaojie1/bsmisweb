@@ -129,7 +129,6 @@ export default {
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.menuData = res.data
-          debugger
           that.setOpenMenu(that.menuData, that.activeName)
           this.$Spin.hide()
         }
@@ -137,11 +136,9 @@ export default {
     },
     menuItemClick (val) {
       this.$router.push({
-        name: val.name,
-        params: {
-          operation: val.operation
-        }
+        name: val.name
       })
+      localStorage.setItem('operation', JSON.stringify(val.operation))
     },
     // 给选中的菜单赋值
     setOpenMenu (menu, activeName) {
