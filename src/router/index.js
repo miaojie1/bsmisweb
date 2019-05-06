@@ -74,7 +74,7 @@ export default new Router({
         },
         {
           path: '/role/listRolePage',
-          name: '角色管理',
+          name: '资源管理',
           component: () => import('@/view/common/roleManage')
         }
       ]
