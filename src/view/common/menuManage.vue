@@ -339,6 +339,7 @@ export default {
         if (valid) {
           this.$http.postForm('/menu/saveMenu?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
+            this.$refs[name].resetFields()
             if (res.data.status === true) {
               this.getMenuPage()
               this.$Message.success(res.data.message)
@@ -411,7 +412,7 @@ export default {
       let url = '/menu/listAllMenus'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          this.allMenuData = res.data.content
+          this.allMenuData = res.data
         }
       })
     },

@@ -48,7 +48,7 @@
           <Input v-model="formData.content" placeholder="公告内容" />
         </FormItem>
         <FormItem label="生效-失效日期" prop="effectAndExpireDate">
-          <DatePicker type="datetimerange"
+          <DatePicker type="daterange"
             placement="bottom-end"
             placeholder="选择生效日期以及失效日期"
             confirm
@@ -57,14 +57,11 @@
             @on-clear="handleClearDate"
             ></DatePicker>
         </FormItem>
-        <FormItem label="添加附件" prop="attachments">
+        <!-- <FormItem label="添加附件" prop="attachments">
           <Upload action="//jsonplaceholder.typicode.com/posts/">
             <Button icon="ios-cloud-upload-outline">点击上传附件</Button>
           </Upload>
-        </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
+        </FormItem> -->
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -75,35 +72,27 @@
       v-model="showEditModal"
       title="修改公告">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
-        <FormItem label="菜单项" prop="name">
-          <Input v-model="formData.name" placeholder="菜单项" />
+        <FormItem label="公告标题" prop="name">
+          <Input v-model="formData.name" placeholder="公告标题" />
         </FormItem>
-        <FormItem label="URL" prop="url">
-          <Input v-model="formData.url" placeholder="URL" />
+        <FormItem label="公告内容" prop="content">
+          <Input v-model="formData.content" placeholder="公告内容" />
         </FormItem>
-        <FormItem label="状态" prop="status">
-          <i-switch v-model="formData.status" @on-change="changeStatus">
-            <span slot="open">是</span>
-            <span slot="close">否</span>
-          </i-switch>
+        <FormItem label="生效-失效日期" prop="effectAndExpireDate">
+          <DatePicker type="daterange"
+          placement="bottom-end"
+          :placeholder="effectAndExpireDate"
+          confirm
+          v-model="effectAndExpireDate"
+          @on-change="changeEffectAndExpireDate"
+          @on-clear="handleClearDate"
+          ></DatePicker>
         </FormItem>
-        <FormItem label="备注" prop="remark">
-          <Input v-model="formData.remark" placeholder="备注"/>
-        </FormItem>
-        <FormItem label="是否根菜单" prop="rootMenu">
-          <i-switch v-model="formData.rootMenu" @on-change="changeRootMenu">
-            <span slot="open">是</span>
-            <span slot="close">否</span>
-          </i-switch>
-        </FormItem>
-        <FormItem label="父菜单" prop="parentMenuId">
-          <Select v-model="formData.parentMenuId">
-            <Option v-for="item in menuData" :value="item.id" :key="item.id">{{ item.name }}</Option>
-          </Select>
-        </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
+        <!-- <FormItem label="添加附件" prop="attachments">
+          <Upload action="//jsonplaceholder.typicode.com/posts/">
+            <Button icon="ios-cloud-upload-outline">点击上传附件</Button>
+          </Upload>
+        </FormItem> -->
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmEdit('formData')">提交</Button>
@@ -211,8 +200,7 @@ export default {
         name: '',
         content: '',
         expireDate: '',
-        effectDate: '',
-        attachments: []
+        effectDate: ''
       },
       // 校验规则
       ruleValidate: {
@@ -223,7 +211,8 @@ export default {
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
-      effectAndExpireDate: ''
+      effectAndExpireDate: '',
+      currentRowId: ''
     }
   },
   created () {
@@ -235,7 +224,7 @@ export default {
     getPostingPage () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
-        paramJson: this.searchData
+        postingName: this.searchData
       }
       let url = '/posting/listPostingPage/pageNo/' + this.pageNo + '/pageSize/' + this.pageSize
       this.$http.post(url, data).then(res => {
@@ -260,10 +249,11 @@ export default {
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$http.postAndAttach('/posting/savePosting?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
+          this.$http.postForm('/posting/savePosting?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
             if (res.data.status === true) {
               this.getPostingPage()
+              this.$refs.formData.resetFields()
               this.$Message.success(res.data.message)
             } else {
               this.$Message.error(res.data.message)
@@ -276,20 +266,40 @@ export default {
     },
     cancelAdd () {
       this.showAddModal = false
+      this.$refs.formData.resetFields()
       this.$Message.info('您已取消增加！')
     },
-    edit () {
+    edit (row, index) {
+      this.formData = row
+      debugger
+      this.effectAndExpireDate = row.effectDate.substring(0, 10) + '-' + row.expireDate.substring(0, 10)
       this.showEditModal = true
     },
-    confirmEdit () {},
+    confirmEdit (name) {
+    },
     cancelEdit () {
       this.showEditModal = false
+      this.$refs.formData.resetFields()
       this.$Message.info('您已取消修改！')
     },
     remove (row, index) {
+      this.currentRowId = row.id
       this.showDeleteModal = true
     },
-    confirmDelete () {},
+    confirmDelete () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        postingIds: this.currentRowId
+      }
+      let url = '/posting/delPostingBatch'
+      this.$http.post(url, data).then(res => {
+        this.showDeleteModal = false
+        if (res.data.status === true) {
+          this.$Message.success(res.data.message)
+          this.getPostingPage()
+        }
+      })
+    },
     cancelDelete () {
       this.showDeleteModal = false
       this.$Message.info('您已取消删除！')

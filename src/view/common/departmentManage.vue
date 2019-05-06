@@ -59,12 +59,9 @@
         <FormItem label="备注" prop="remark">
           <Input v-model="formData.remark" placeholder="备注" />
         </FormItem>
-        <FormItem label="部门职位" prop="departmentPositions">
+        <!-- <FormItem label="部门职位" prop="departmentPositions">
           <Input v-model="formData.departmentPositions" placeholder="部门职位" />
-        </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
+        </FormItem> -->
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -82,19 +79,16 @@
           <Input v-model="formData.description" placeholder="描述" />
         </FormItem>
         <FormItem label="上级部门" prop="superiorDepartment">
-          <Select v-model="superDep.id">
-            <Option v-for="item in departData" :value="item" :key="item.id">{{ item.name }}</Option>
+          <Select v-model="superDep.id" :placeholder="superDep.name">
+            <Option v-for="item in departData" :value="item" :label="item.name" :key="item.id"></Option>
           </Select>
         </FormItem>
         <FormItem label="备注" prop="remark">
           <Input v-model="formData.remark" placeholder="备注" />
         </FormItem>
-        <FormItem label="部门职位" prop="departmentPositions">
+        <!-- <FormItem label="部门职位" prop="departmentPositions">
           <Input v-model="formData.departmentPositions" placeholder="部门职位" />
-        </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
+        </FormItem> -->
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmEdit('formData')">提交</Button>
@@ -122,7 +116,6 @@
 
 <script>
 import btnManage from '../../components/btnManage'
-// import {getDate} from '../../common/filters/dateFilters.js'
 export default {
   data () {
     return {
@@ -208,9 +201,8 @@ export default {
         name: '',
         description: '',
         superiorDepartment: '',
-        remark: '',
-        departmentPositions: '',
-        version: 1
+        remark: ''
+        // departmentPositions: {},
       },
       // 校验规则
       ruleValidate: {
@@ -235,21 +227,20 @@ export default {
     },
     edit (row, index) {
       this.formData = row
-      const superiorDepartment = row.superiorDepartment
-      this.superDep = superiorDepartment.id
+      let superiorDepart = row.superiorDepartment
+      this.superDep = superiorDepart
       this.showEditModal = true
     },
     remove (row, index) {
+      this.currentRowId = row.id
       this.showDeleteModal = true
     },
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken')
-          // let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken') + '&superiorDepartmentId=' + this.formData.superiorDepartment
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
-            debugger
             if (res.data.status === true) {
               this.getDepartData()
               this.$Message.success(res.data.message)
@@ -264,15 +255,48 @@ export default {
     },
     cancelAdd () {
       this.showAddModal = false
+      this.$refs.formData.resetFields()
       this.$Message.info('您已取消添加！')
     },
-    confirmEdit () {},
+    confirmEdit (name) {
+      this.formData.superiorDepartment = this.superDep.id
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken')
+          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
+            this.showEditModal = false
+            if (res.data.status === true) {
+              this.getDepartData()
+              this.$Message.success(res.data.message)
+            } else {
+              this.$Message.error(res.data.message)
+            }
+          })
+        } else {
+          this.$Message.error('表单数据校验失败!')
+        }
+      })
+    },
     cancelEdit () {
-      this.formData.superiorDepartment = this.superDep
+      this.superDep = ''
+      this.$refs.formData.resetFields()
       this.showEditModal = false
       this.$Message.info('您已取消编辑！')
     },
-    confirmDelete () {},
+    confirmDelete () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        departmentIds: this.currentRowId
+      }
+      let url = '/department/delDepartmentBatch'
+      this.$http.post(url, data).then(res => {
+        this.showDeleteModal = false
+        if (res.data.status === true) {
+          this.$Message.success(res.data.message)
+          this.getDepartData()
+        }
+      })
+    },
     cancelDelete () {
       this.showDeleteModal = false
       this.$Message.info('您已取消删除！')
