@@ -157,7 +157,7 @@ export default{
       })
     })
   },
-  postAndAttach: function (url, params) {
+  postA: function (url, params) {
     return new Promise((resolve, reject) => {
       // 设置超时时间
       // axios.defaults.retry = 4
@@ -167,9 +167,9 @@ export default{
       axios({
         method: 'POST',
         url: url,
-        // headers: {
-        //   'Content-Type': 'multipart/form-data'
-        // },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
         data: params,
         baseURL: root,
         withCredentials: true
