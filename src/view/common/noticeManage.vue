@@ -7,7 +7,6 @@
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
         <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
-        <!-- <Button @click="edit" type="primary" style="marign-left: 10px">测试修改</Button> -->
       </i-col>
     </Row>
     <Table
@@ -16,7 +15,11 @@
       :columns="columns"
       :data="postingData"
       style="margin-top: 15px"
-      size="small">
+      size="small"
+      @on-row-click="handleClickRow">
+      <template slot-scope="{ row }" slot="name">
+        <strong>{{ row.name }}</strong>
+      </template>
       <template slot="action" slot-scope="{ row, index }">
         <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
@@ -119,7 +122,6 @@
 </template>
 
 <script>
-import {formatDate} from '../../common/filters/dateFilters.js'
 export default {
   data () {
     return {
@@ -136,36 +138,48 @@ export default {
           title: '创建时间',
           key: 'createDate',
           render: (h, params) => {
-            return h('Tag',
-              formatDate(new Date(params.row.createDate), 'yyyy-MM-dd hh:mm')
-            )
+            const createDate = params.row.createDate
+            if (createDate === null || createDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', createDate.substring(0, 10))
+            }
           }
         },
         {
           title: '修改时间',
           key: 'modificationDate',
           render: (h, params) => {
-            return h('Tag',
-              formatDate(new Date(params.row.modificationDate), 'yyyy-MM-dd hh:mm')
-            )
+            const modificationDate = params.row.modificationDate
+            if (modificationDate === null || modificationDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', modificationDate.substring(0, 10))
+            }
           }
         },
         {
           title: '生效时间',
           key: 'effectDate',
           render: (h, params) => {
-            return h('Tag',
-              formatDate(new Date(params.row.effectDate), 'yyyy-MM-dd hh:mm')
-            )
+            const effectDate = params.row.effectDate
+            if (effectDate === null || effectDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', effectDate.substring(0, 10))
+            }
           }
         },
         {
           title: '失效时间',
           key: 'expireDate',
           render: (h, params) => {
-            return h('Tag',
-              formatDate(new Date(params.row.expireDate), 'yyyy-MM-dd hh:mm')
-            )
+            const expireDate = params.row.expireDate
+            if (expireDate === null || expireDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', expireDate.substring(0, 10))
+            }
           }
         },
         {
@@ -196,12 +210,7 @@ export default {
       showEditBtn: false,
       showDeleteBtn: false,
       searchData: '',
-      formData: {
-        name: '',
-        content: '',
-        expireDate: '',
-        effectDate: ''
-      },
+      formData: {},
       // 校验规则
       ruleValidate: {
         name: [
@@ -212,7 +221,8 @@ export default {
       showEditModal: false,
       showDeleteModal: false,
       effectAndExpireDate: '',
-      currentRowId: ''
+      currentRowId: '',
+      currentRow: ''
     }
   },
   created () {
@@ -236,6 +246,7 @@ export default {
       })
     },
     add () {
+      this.formData = {}
       this.showAddModal = true
     },
     changeEffectAndExpireDate (val, value) {
@@ -271,15 +282,30 @@ export default {
     },
     edit (row, index) {
       this.formData = row
-      debugger
       this.effectAndExpireDate = row.effectDate.substring(0, 10) + '-' + row.expireDate.substring(0, 10)
       this.showEditModal = true
     },
     confirmEdit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          this.$http.postForm('/posting/savePosting?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
+            this.showEditModal = false
+            if (res.data.status === true) {
+              this.getPostingPage()
+              this.$refs.formData.resetFields()
+              this.$Message.success(res.data.message)
+            } else {
+              this.$Message.error(res.data.message)
+            }
+          })
+        } else {
+          this.$Message.error('表单数据校验失败!')
+        }
+      })
     },
     cancelEdit () {
-      this.showEditModal = false
       this.$refs.formData.resetFields()
+      this.showEditModal = false
       this.$Message.info('您已取消修改！')
     },
     remove (row, index) {
@@ -288,10 +314,9 @@ export default {
     },
     confirmDelete () {
       let data = {
-        access_token: localStorage.getItem('jwtToken'),
-        postingIds: this.currentRowId
+        access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/posting/delPostingBatch'
+      let url = '/posting/delete/postingId/' + this.currentRowId
       this.$http.post(url, data).then(res => {
         this.showDeleteModal = false
         if (res.data.status === true) {
@@ -313,6 +338,11 @@ export default {
     },
     changePageSize (pageSize) {
       this.pageSize = pageSize
+    },
+    handleClickRow (data, index) {
+      this.currentRowId = data.id
+      this.currentRow = data
+      this.formData = data
     }
   },
   watch: {
@@ -326,7 +356,6 @@ export default {
       val.forEach(element => {
         if (element.buttonId === 'addBtn') {
           this.showAddBtn = true
-        } else if (element.buttonId === 'editBtn') {
           this.showEditBtn = true
         } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
           this.showDeleteBtn = true
