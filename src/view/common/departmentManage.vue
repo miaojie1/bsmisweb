@@ -56,9 +56,6 @@
             <Option v-for="item in departData" :value="item" :key="item.id">{{ item.name }}</Option>
           </Select>
         </FormItem>
-        <FormItem label="备注" prop="remark">
-          <Input v-model="formData.remark" placeholder="备注" />
-        </FormItem>
         <!-- <FormItem label="部门职位" prop="departmentPositions">
           <Input v-model="formData.departmentPositions" placeholder="部门职位" />
         </FormItem> -->
@@ -79,12 +76,9 @@
           <Input v-model="formData.description" placeholder="描述" />
         </FormItem>
         <FormItem label="上级部门" prop="superiorDepartment">
-          <Select v-model="superDep.id" :placeholder="superDep.name">
+          <Select v-model="superDep"  :placeholder="superDep.name">
             <Option v-for="item in departData" :value="item" :label="item.name" :key="item.id"></Option>
           </Select>
-        </FormItem>
-        <FormItem label="备注" prop="remark">
-          <Input v-model="formData.remark" placeholder="备注" />
         </FormItem>
         <!-- <FormItem label="部门职位" prop="departmentPositions">
           <Input v-model="formData.departmentPositions" placeholder="部门职位" />
@@ -170,10 +164,6 @@ export default {
           }
         },
         {
-          title: '备注',
-          key: 'remark'
-        },
-        {
           title: '部门职位',
           key: 'departmentPositions'
         },
@@ -189,7 +179,9 @@ export default {
         }
       ],
       departData: [],
-      superDep: {},
+      superDep: {
+        id: ''
+      },
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
@@ -200,14 +192,13 @@ export default {
       formData: {
         name: '',
         description: '',
-        superiorDepartment: '',
-        remark: ''
+        superiorDepartment: {}
         // departmentPositions: {},
       },
       // 校验规则
       ruleValidate: {
         name: [
-          { required: true, message: '菜单项不可以为空', trigger: 'blur' }
+          { required: true, message: '名称不可以为空', trigger: 'blur' }
         ]
       },
       currentRowId: '',
@@ -228,7 +219,9 @@ export default {
     edit (row, index) {
       this.formData = row
       let superiorDepart = row.superiorDepartment
-      this.superDep = superiorDepart
+      if (superiorDepart !== null) {
+        this.superDep = superiorDepart
+      }
       this.showEditModal = true
     },
     remove (row, index) {
@@ -243,6 +236,7 @@ export default {
             this.showAddModal = false
             if (res.data.status === true) {
               this.getDepartData()
+              this.$refs.formData.resetFields()
               this.$Message.success(res.data.message)
             } else {
               this.$Message.error(res.data.message)
@@ -258,8 +252,18 @@ export default {
       this.$refs.formData.resetFields()
       this.$Message.info('您已取消添加！')
     },
+    /**
+     * 暂时去掉职位部门属性
+     */
     confirmEdit (name) {
-      this.formData.superiorDepartment = this.superDep.id
+      this.formData.superiorDepartment = this.superDep
+      if (this.superDep.id === '') {
+        delete this.formData.superiorDepartment
+      } else {
+        this.formData.superiorDepartment = this.superDep
+      }
+      delete this.formData.createDate
+      delete this.formData.departmentPositions
       this.$refs[name].validate((valid) => {
         if (valid) {
           let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken')
@@ -276,6 +280,10 @@ export default {
           this.$Message.error('表单数据校验失败!')
         }
       })
+      this.$refs.formData.resetFields()
+      this.superDep = {
+        id: ''
+      }
     },
     cancelEdit () {
       this.superDep = ''
