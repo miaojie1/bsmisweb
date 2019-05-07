@@ -13,8 +13,11 @@
           </a>
           <div class="notice"  style="color:#57a3f3">
             <marquee behavior="scroll" direction="up" loop="infinite" scrollamount="2" scrolldelay="30" onMouseOut="this.start()" onMouseOver="this.stop()">
-              <Table :columns="expPostingColumns" :data="expPostingData" style="margin-top: 30px" size="small">
-              </Table>
+              <ul>
+                <li v-for="(item,Index) in expPostingData" :key="Index" :name="item.name">
+                  <router-link :to="'/posting/announcementDetail'+item.id">{{item.name}}(点击查看详情)</router-link>
+                </li>
+              </ul>
             </marquee>
           </div>
         </Card>
@@ -70,46 +73,9 @@
   </div>
 </template>
 <script>
-import {formatDate} from '../common/filters/dateFilters.js'
 export default {
   data () {
     return {
-      expPostingColumns: [
-        {
-          title: '公告标题',
-          key: 'name'
-        },
-        {
-          title: '公告内容',
-          key: 'content'
-        },
-        {
-          title: '修改时间',
-          key: 'modificationDate',
-          render: (h, params) => {
-            return h('Tag',
-              formatDate(new Date(params.row.modificationDate), 'yyyy-MM-dd hh:mm')
-            )
-          }
-        },
-        {
-          title: '失效时间',
-          key: 'expireDate',
-          render: (h, params) => {
-            return h('Tag',
-              formatDate(new Date(params.row.expireDate), 'yyyy-MM-dd hh:mm')
-            )
-          }
-        },
-        {
-          title: '发布人',
-          key: 'announcer',
-          render: (h, params) => {
-            const row = params.row
-            return h('Tag', row.announcer.name)
-          }
-        }
-      ],
       expPostingData: [],
       columns1: [
         {
@@ -162,13 +128,11 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let pageNo = '0'
-      let pageSize = '5'
-      let url = '/posting/listExpPostingPage/pageNo/' + pageNo + '/pageSize/' + pageSize
+      let url = '/posting/listExpPostingPage'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           console.log(res)
-          this.expPostingData = res.data.content
+          this.expPostingData = res.data
         }
       })
     }
