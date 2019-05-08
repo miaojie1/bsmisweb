@@ -24,6 +24,7 @@
       <template slot="action" slot-scope="{ row, index }">
         <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" v-show="showDetailBtn" @click="showDetail(row, index)">详情</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -45,6 +46,9 @@
       v-model="showAddModal"
       title="添加用户">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
+        <FormItem label="姓名" prop="name">
+          <Input v-model="formData.name" placeholder="姓名" />
+        </FormItem>
         <FormItem label="用户名" prop="username">
           <Input v-model="formData.username" placeholder="用户名" />
         </FormItem>
@@ -54,24 +58,53 @@
         <FormItem label="性别" prop="sex">
           <Input v-model="formData.sex" placeholder="性别" />
         </FormItem>
+        <FormItem label="入职日期" prop="entryDate">
+          <DatePicker type="datetime"
+            placeholder="选择入职日期"
+            confirm
+            format="yyyy-MM-ddTHH:mm:ss+08:00"
+            v-model="formData.entryDate"
+            ></DatePicker>
+        </FormItem>
+        <FormItem label="离职日期" prop="termDate">
+          <DatePicker type="datetime"
+            placeholder="选择离职日期"
+            confirm
+            format="yyyy-MM-ddTHH:mm:ss+08:00"
+            v-model="formData.termDate"
+            ></DatePicker>
+        </FormItem>
         <FormItem label="邮箱" prop="email">
           <Input v-model="formData.email" placeholder="邮箱" />
         </FormItem>
         <FormItem label="手机号码" prop="mobile">
           <Input v-model="formData.mobile" placeholder="手机号码"/>
         </FormItem>
-        <!-- <FormItem label="部门" prop="department">
-          <Select style="width:200px" v-model="formData.department">
-            <Option v-for="item in departmentItem" :value="item.id" :key="item.id" name="department">{{item.name }}
+        <FormItem label="部门" prop="department">
+          <Select style="width:200px" v-model="formData.department" @on-change="changeDepartmentPosition(formData.department)">
+            <Option v-for="item in departmentItem" :value="item" :key="item.id" name="department" :selected="index.indexOf(item.id) > -1">
+              {{item.name }}
+            </Option>
+          </Select>
+        </FormItem>
+        <FormItem label="部门职位" prop="departmentPosition">
+          <Select style="width:200px" v-model="formData.departmentPosition">
+            <Option v-for="item in departmentPositionItem" :value="item" :key="item.id" name="departmentPosition">{{item.name }}
+            </Option>
+          </Select>
+        </FormItem>
+        <FormItem label="角色" prop="roles">
+          <Select style="width:200px" v-model="formData.roles" multiple>
+            <Option v-for="item in rolesItem" :value="item" :key="item.id" name="roles">{{item.description }}
             </Option>
           </Select>
         </FormItem>
         <FormItem label="员工状态" prop="employeeStatus">
-          <Input v-model="formData.employeeStatus" placeholder="员工状态"/>
+          <Select style="width:200px" v-model="formData.employeeStatus">
+            <Option v-for="item in employeeStatusItem" :value="item" :key="item.id" name="employeeStatus">{{item.name }}
+            </Option>
+          </Select>
         </FormItem>
-        <FormItem label="员工职位" prop="DepartmentPosition">
-          <Input v-model="formData.DepartmentPosition" placeholder="员工职位"/>
-        </FormItem> -->
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -81,6 +114,9 @@
     <Modal
       v-model="showEditModal"
       title="修改用户">
+      <FormItem label="姓名" prop="name">
+          <Input v-model="formData.name" placeholder="姓名" />
+        </FormItem>
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
         <FormItem label="用户名" prop="username">
           <Input v-model="formData.username" placeholder="用户名" />
@@ -91,6 +127,22 @@
         <FormItem label="性别" prop="sex">
           <Input v-model="formData.sex" placeholder="性别" />
         </FormItem>
+        <FormItem label="入职日期" prop="entryDate">
+          <DatePicker type="datetime"
+            placeholder="选择入职日期"
+            confirm
+            format="yyyy-MM-ddTHH:mm:ss+08:00"
+            v-model="formData.entryDate"
+            ></DatePicker>
+        </FormItem>
+        <FormItem label="离职日期" prop="termDate">
+          <DatePicker type="datetime"
+            placeholder="选择离职日期"
+            confirm
+            format="yyyy-MM-ddTHH:mm:ss+08:00"
+            v-model="formData.termDate"
+            ></DatePicker>
+        </FormItem>
         <FormItem label="邮箱" prop="email">
           <Input v-model="formData.email" placeholder="邮箱" />
         </FormItem>
@@ -99,15 +151,27 @@
         </FormItem>
         <FormItem label="部门" prop="department">
           <Select style="width:200px" v-model="formData.department">
-            <Option v-for="item in departmentItem" :value="item.id" :key="item.id" name="department">{{item.name }}
+            <Option v-for="item in departmentItem" :value="item" :key="item.id" name="department">{{item.name }}
+            </Option>
+          </Select>
+        </FormItem>
+        <FormItem label="员工职位" prop="departmentPosition">
+          <Select style="width:200px" v-model="formData.departmentPosition">
+            <Option v-for="item in departmentPositionItem" :value="item" :key="item.id" name="departmentPosition">{{item.name }}
+            </Option>
+          </Select>
+        </FormItem>
+        <FormItem label="角色" prop="roles">
+          <Select style="width:200px" v-model="formData.roles" multiple>
+            <Option v-for="item in rolesItem" :value="item" :key="item.id" name="roles">{{item.description }}
             </Option>
           </Select>
         </FormItem>
         <FormItem label="员工状态" prop="employeeStatus">
-          <Input v-model="formData.employeeStatus" placeholder="员工状态"/>
-        </FormItem>
-        <FormItem label="员工职位" prop="DepartmentPosition">
-          <Input v-model="formData.DepartmentPosition" placeholder="员工职位"/>
+          <Select style="width:200px" v-model="formData.employeeStatus">
+            <Option v-for="item in employeeStatusItem" :value="item" :key="item.id" name="employeeStatus">{{item.name }}
+            </Option>
+          </Select>
         </FormItem>
       </Form>
       <div slot="footer">
@@ -131,6 +195,12 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+        v-model="showDetailModal"
+        title="用户详情"
+        @on-ok="ok">
+        <span>姓名：{{columns.name}}</span>
+    </Modal>
   </div>
 </template>
 
@@ -139,22 +209,26 @@ import btnManage from '../../components/btnManage'
 export default {
   data () {
     return {
+      index: '',
       buttonList: [],
       columns: [
         {
           title: 'ID',
           key: 'id'
-          // width: 50
+        },
+        {
+          title: '姓名',
+          key: 'name'
         },
         {
           title: '用户名',
-          key: 'username'
-          // width: 50
+          key: 'username',
+          width: 80
         },
         {
           title: '密码',
           key: 'password',
-          width: 150
+          width: 140
         },
         {
           title: '性别',
@@ -166,62 +240,70 @@ export default {
         },
         {
           title: '手机号码',
-          key: 'mobile'
+          key: 'mobile',
+          width: 100
         },
         {
           title: '部门',
           key: 'department',
+          width: 100,
           render: (h, params) => {
             const row = params.row
-            return h('Tag', {
-              style: {
-                color: 'white',
-                border: 0
-              }
-            }, row.department.name)
+            return h('span', row.department.name)
           }
         },
         {
-          title: '员工状态',
+          title: '职位',
+          key: 'departmentPosition',
+          render: (h, params) => {
+            return h('span', params.row.departmentPosition.name)
+          }
+        },
+        {
+          title: '角色',
+          key: 'roles',
+          render: (h, params) => {
+            const roles = params.row.roles
+            let description = ''
+            for (let i = 0; i < roles.length; i++) {
+              description += roles[i].description + '  '
+            }
+            return h('span', description)
+          }
+        },
+        {
+          title: '状态',
           key: 'employeeStatus',
           render: (h, params) => {
-            return h('Tag', {
-              style: {
-                color: 'white',
-                border: 0
-              }
-            }, params.row.employeeStatus.name)
+            return h('span', params.row.employeeStatus.name)
           }
         },
-        {
-          title: '员工职位',
-          key: 'DepartmentPosition',
-          render: (h, params) => {
-            return h('Tag', {
-              style: {
-                color: 'white',
-                border: 0
-              }
-            }, params.row.DepartmentPosotion.name)
-          }
-        },
+        // {
+        //   title: '版本',
+        //   key: 'version'
+        // },
         {
           title: '操作',
           slot: 'action',
-          width: 150,
+          width: 180,
           fixed: 'right'
         }
       ],
       employeeData: [],
       formData: {
+        name: '',
         username: '',
         password: '',
         sex: '',
+        entryDate: '',
+        termDate: '',
         email: '',
-        mobile: ''
-        // department: '',
-        // employeeStatus: '',
-        // DepartmentPosition: ''
+        mobile: '',
+        department: '',
+        departmentPosition: '',
+        roles: [],
+        employeeStatus: '',
+        version: 1
       },
       ruleValidate: {
         username: [
@@ -236,8 +318,13 @@ export default {
       showEditBtn: false,
       showAddModal: false,
       showEditModal: false,
+      showDetailBtn: false,
       showDeleteModal: false,
+      showDetailModal: false,
       departmentItem: [],
+      employeeStatusItem: [],
+      departmentPositionItem: [],
+      // rolesItem: {},
       currentRowId: '',
       // 分页使用
       pageNo: 0,
@@ -251,10 +338,13 @@ export default {
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
     this.getEmployeePage()
     this.getDepartment()
+    // this.getDepartmentPosition()
+    this.getEmployeeStatus()
+    this.getRoles()
   },
   methods: {
     add () {
-      this.formData = []
+      this.formData = {}
       this.showAddModal = true
     },
     remove (row, index) {
@@ -272,20 +362,74 @@ export default {
       let url = '/employee/listEmployeePage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo + '?username=' + this.searchData
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
+          console.log(res)
           this.employeeData = res.data.content
           this.employeeDataTotal = parseInt(res.data.totalElements)
         }
       })
     },
+    // 获取部门
     getDepartment () {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/department/listDepartmentPage/pageSize/' + this.pageSize + '/pageNo/' + this.pageNo
+      let url = '/department/listAllDepartment'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           console.log(res)
-          this.departmentItem = res.data.content
+          this.departmentItem = res.data
+        }
+      })
+    },
+    changeDepartmentPosition (department) {
+      console.log(department)
+      let departmentIds = ''
+      departmentIds = department.id
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/departmentPosition/listAllDepartmentPositions?departmentIds=' + departmentIds
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          console.log(res)
+          this.departmentPositionItem = res.data
+        }
+      })
+    },
+    // 获取部门职位
+    // getDepartmentPosition () {
+    //   let data = {
+    //     access_token: localStorage.getItem('jwtToken')
+    //   }
+    //   let url = '/departmentPosition/listAllDepartmentPositions'
+    //   this.$http.post(url, data).then(res => {
+    //     if (res.status === 200) {
+    //       console.log(res)
+    //       this.departmentPositionItem = res.data
+    //     }
+    //   })
+    // },
+    // 获取角色
+    getRoles () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/role/listAllRoles'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.rolesItem = res.data
+        }
+      })
+    },
+    // 获取在职状态
+    getEmployeeStatus () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/employeeStatus/listAllEmployeeStatus'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.employeeStatusItem = res.data
         }
       })
     },
@@ -332,9 +476,9 @@ export default {
       })
     },
     cancelEdit (name) {
-      this.$refs[name].resetFields()
-      this.$refs.employeeData.clearCurrentRow()
+      // this.$refs[name].resetFields()
       this.showEditModal = false
+      // this.$refs.employeeData.clearCurrentRow()
       this.$Message.info('您已取消编辑！')
     },
     // 删除用户
@@ -361,6 +505,10 @@ export default {
     reset () {
       this.searchData = ''
       this.getEmployeePage()
+    },
+    showDetail (row, index) {
+      this.currentRowId = row.id
+      this.showDetailModal = true
     },
     // 分页
     changePageNo (pageNo) {
