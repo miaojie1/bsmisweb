@@ -60,11 +60,14 @@
             @on-clear="handleClearDate"
             ></DatePicker>
         </FormItem>
-        <!-- <FormItem label="添加附件" prop="attachments">
-          <Upload action="//jsonplaceholder.typicode.com/posts/">
+        <FormItem label="添加附件" prop="attachments">
+          <Upload
+            :action="actionUrl"
+            :on-success="onFileSuccess"
+            name="file">
             <Button icon="ios-cloud-upload-outline">点击上传附件</Button>
           </Upload>
-        </FormItem> -->
+        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -222,12 +225,13 @@ export default {
       showDeleteModal: false,
       effectAndExpireDate: '',
       currentRowId: '',
-      currentRow: ''
+      currentRow: '',
+      actionUrl: '',
+      attachmentId: ''
     }
   },
   created () {
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
-    localStorage.setItem('operation', JSON.stringify(this.$route.params.operation))
     this.getPostingPage()
   },
   methods: {
@@ -247,6 +251,7 @@ export default {
     },
     add () {
       this.formData = {}
+      this.actionUrl = 'http://127.0.0.1:8082/supervision/attachment/upload?access_token=' + localStorage.getItem('jwtToken')
       this.showAddModal = true
     },
     changeEffectAndExpireDate (val, value) {
@@ -260,13 +265,17 @@ export default {
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$http.postForm('/posting/savePosting?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
+          let url = '/posting/savePosting?access_token=' + localStorage.getItem('jwtToken') + '&attachmentId=' + this.attachmentId
+          console.log('_____________________________________')
+          console.log(this.formData)
+          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
             if (res.data.status === true) {
               this.getPostingPage()
               this.$refs.formData.resetFields()
               this.$Message.success(res.data.message)
             } else {
+              this.removeAttachment()
               this.$Message.error(res.data.message)
             }
           })
@@ -343,6 +352,22 @@ export default {
       this.currentRowId = data.id
       this.currentRow = data
       this.formData = data
+    },
+    onFileSuccess (response, file, fileList) {
+      this.attachmentId = response
+    },
+    removeAttachment () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        attachmentId: this.attachmentId
+      }
+      debugger
+      let url = '/attachment/deleteAttachment'
+      this.$http.post(url, data).then(res => {
+        if (res.data.status === true) {
+          this.$Message.success(res.data.message)
+        }
+      })
     }
   },
   watch: {

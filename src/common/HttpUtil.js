@@ -157,31 +157,6 @@ export default{
       })
     })
   },
-  postA: function (url, params) {
-    return new Promise((resolve, reject) => {
-      // 设置超时时间
-      // axios.defaults.retry = 4
-      // axios.defaults.retryDelay = 1000
-      // axios.defaults.timeout = 20000
-      // 添加请求拦截器
-      axios({
-        method: 'POST',
-        url: url,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        data: params,
-        baseURL: root,
-        withCredentials: true
-      }).then((res) => {
-        if (this.setToken(res)) {
-          resolve(res)
-        }
-      }).catch((err) => {
-        reject(err)
-      })
-    })
-  },
   setToken (res) {
     if (res.status === 200) {
       var token = res.data
