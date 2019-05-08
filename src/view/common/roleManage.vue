@@ -68,7 +68,7 @@
           <Input v-model="formData.name" placeholder="角色名称" />
         </FormItem>
         <FormItem label="角色描述" prop="description">
-          <Input v-model="formData.description" placeholder="description" />
+          <Input v-model="formData.description" placeholder="角色描述" />
         </FormItem>
         <FormItem label="版本" prop="version">
           <Input v-model="formData.version" placeholder="版本" />
@@ -93,6 +93,15 @@
       <div slot="footer">
         <Button type="error" @click="confirmDelete()">删除</Button>
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
+      v-model="showAddRootModal"
+      title="角色授权">
+      <Tree :data="menusData" children-key="subMenus" :render="renderContent" show-checkbox></Tree>
+      <div slot="footer">
+        <Button type="primary" @click="confirmAddRoot()">提交</Button>
+        <Button @click="cancelAddRoot()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
   </div>
@@ -177,6 +186,8 @@ export default {
       ],
       roleData: [],
       allRoleData: [],
+      rootsData: '',
+      menusData: '',
       formData: {
         name: '',
         description: '',
@@ -188,12 +199,14 @@ export default {
           { required: true, message: '不可以为空', trigger: 'blur' }
         ]
       },
+      // 控制各提示框的显示
       showAddModal: false,
       showDeleteModal: false,
       showEditModal: false,
       showAddBtn: false,
       showDeleteBtn: false,
       showEditBtn: false,
+      showAddRootModal: false,
       // 当前选择行的ID
       currentRowId: '',
       // 分页使用
@@ -226,7 +239,16 @@ export default {
       this.showEditModal = true
     },
     addRoot (row, index) {
-
+      this.formData = row
+      this.getRoots()
+      this.showAddRootModal = true
+    },
+    renderContent (h, { root, node, data }) {
+      return h('span', [
+        h('Icon', {
+          style: {
+            marginRight: '8px'
+          }}), h('span', data.name)])
     },
     confirmDelete () {
       let data = {
@@ -282,6 +304,16 @@ export default {
       this.showEditModal = false
       this.$Message.info('您已取消编辑！')
     },
+    cancelAddRoot () {
+      this.showAddRootModal = false
+      this.$Message.info('您已取消修改！')
+      this.menusData = ''
+      this.formData = {
+        name: '',
+        description: '',
+        version: ''
+      }
+    },
     cancelAdd (name) {
       this.$refs[name].resetFields()
       this.showAddModal = false
@@ -297,7 +329,19 @@ export default {
       this.pageNo = 0
       this.getRolePage()
     },
-    // 获取菜单资源列表
+    // 获取菜单信息
+    getRoots () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/menu/listAllMenus'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.menusData = res.data
+        }
+      })
+    },
+    // 获取角色列表
     getRolePage () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
@@ -316,7 +360,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/role/listAllRoles'
+      let url = '/menu/listAllMenus'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.allRoleData = res.data.content
@@ -365,5 +409,16 @@ export default {
 <style>
 .ivu-table-body{
   overflow: hidden;
+}
+.ivu-modal{
+  width: 50vh !important;
+}
+.ivu-modal-content{
+  width: 50vh;
+  height: 70vh;
+}
+.ivu-modal-body{
+  height: 75%;
+  overflow: auto;
 }
 </style>
