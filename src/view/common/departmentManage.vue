@@ -56,9 +56,11 @@
             <Option v-for="item in departData" :value="item" :key="item.id">{{ item.name }}</Option>
           </Select>
         </FormItem>
-        <!-- <FormItem label="部门职位" prop="departmentPositions">
-          <Input v-model="formData.departmentPositions" placeholder="部门职位" />
-        </FormItem> -->
+        <FormItem label="部门职位" prop="departmentPositions">
+          <Select v-model="formData.departmentPositions" multiple>
+            <Option v-for="item in departmentPositions" :value="item" :key="item.id">{{ item.name }}</Option>
+          </Select>
+        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -76,13 +78,21 @@
           <Input v-model="formData.description" placeholder="描述" />
         </FormItem>
         <FormItem label="上级部门" prop="superiorDepartment">
-          <Select v-model="superDep"  :placeholder="superDep.name">
+          <Select v-model="formData.superiorDepartment" v-if="superDepStr !== ''" :placeholder="superDepStr">
+            <Option v-for="item in departData" :value="item" :label="item.name" :key="item.id"></Option>
+          </Select>
+          <Select v-model="formData.superiorDepartment" v-else placeholder="无">
             <Option v-for="item in departData" :value="item" :label="item.name" :key="item.id"></Option>
           </Select>
         </FormItem>
-        <!-- <FormItem label="部门职位" prop="departmentPositions">
-          <Input v-model="formData.departmentPositions" placeholder="部门职位" />
-        </FormItem> -->
+        <FormItem label="部门职位" prop="departmentPositions">
+          <Select v-model="formData.departmentPositions" multiple v-if="departPositStr !== ''" :placeholder="departPositStr">
+            <Option v-for="item in departmentPositions" :value="item" :key="item.id">{{ item.name }}</Option>
+          </Select>
+          <Select v-model="formData.departmentPositions" multiple v-else placeholder="无">
+            <Option v-for="item in departmentPositions" :value="item" :key="item.id">{{ item.name }}</Option>
+          </Select>
+        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmEdit('formData')">提交</Button>
@@ -165,11 +175,15 @@ export default {
         },
         {
           title: '部门职位',
-          key: 'departmentPositions'
-        },
-        {
-          title: '版本',
-          key: 'version'
+          key: 'departmentPositions',
+          render: (h, params) => {
+            const po = params.row.departmentPositions
+            let showTags = ''
+            po.forEach(ele => {
+              showTags += ele.name + '、'
+            })
+            return h('span', showTags)
+          }
         },
         {
           title: '操作',
@@ -178,10 +192,10 @@ export default {
           fixed: 'right'
         }
       ],
+      // 供选择得部门
       departData: [],
-      superDep: {
-        id: ''
-      },
+      // 供选择的职位部门
+      departmentPositions: [],
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
@@ -192,9 +206,13 @@ export default {
       formData: {
         name: '',
         description: '',
-        superiorDepartment: {}
-        // departmentPositions: {},
+        superiorDepartment: {},
+        departmentPositions: []
       },
+      // 修改时职位部门下拉框的默认显示
+      departPositStr: '',
+      // 修改时上级部门下拉框的默认显示
+      superDepStr: '',
       // 校验规则
       ruleValidate: {
         name: [
@@ -215,14 +233,20 @@ export default {
   methods: {
     add () {
       this.showAddModal = true
+      this.getDepartPosition()
     },
     edit (row, index) {
       this.formData = row
-      let superiorDepart = row.superiorDepartment
-      if (superiorDepart !== null) {
-        this.superDep = superiorDepart
+      if (row.superiorDepartment !== null) {
+        this.superDepStr = row.superiorDepartment.name
+      }
+      if (row.departmentPositions !== null) {
+        row.departmentPositions.forEach(ele => {
+          this.departPositStr += ele.name + ' '
+        })
       }
       this.showEditModal = true
+      this.getDepartPosition()
     },
     remove (row, index) {
       this.currentRowId = row.id
@@ -231,39 +255,31 @@ export default {
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
+          console.log(this.formData)
           let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken')
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
             if (res.data.status === true) {
               this.getDepartData()
-              this.$refs.formData.resetFields()
               this.$Message.success(res.data.message)
             } else {
               this.$Message.error(res.data.message)
             }
           })
+          this.$refs.formData.resetFields()
         } else {
           this.$Message.error('表单数据校验失败!')
         }
       })
+      this.superDepStr = ''
+      this.departPositStr = ''
     },
     cancelAdd () {
       this.showAddModal = false
       this.$refs.formData.resetFields()
       this.$Message.info('您已取消添加！')
     },
-    /**
-     * 暂时去掉职位部门属性
-     */
     confirmEdit (name) {
-      this.formData.superiorDepartment = this.superDep
-      if (this.superDep.id === '') {
-        delete this.formData.superiorDepartment
-      } else {
-        this.formData.superiorDepartment = this.superDep
-      }
-      delete this.formData.createDate
-      delete this.formData.departmentPositions
       this.$refs[name].validate((valid) => {
         if (valid) {
           let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken')
@@ -281,12 +297,12 @@ export default {
         }
       })
       this.$refs.formData.resetFields()
-      this.superDep = {
-        id: ''
-      }
+      this.departPositStr = ''
+      this.superDepStr = ''
     },
     cancelEdit () {
-      this.superDep = ''
+      this.departPositStr = ''
+      this.superDepStr = ''
       this.$refs.formData.resetFields()
       this.showEditModal = false
       this.$Message.info('您已取消编辑！')
@@ -326,10 +342,21 @@ export default {
         }
       })
     },
+    getDepartPosition () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/departmentPosition/listAllDepartmentPositions'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.departmentPositions = res.data
+        }
+      })
+    },
     handleClickRow (data, index) {
       this.currentRowId = data.id
       this.currentRow = data
-      this.formData = data
+      // this.formData = data
     },
     // 分页
     changePageNo (pageNo) {
