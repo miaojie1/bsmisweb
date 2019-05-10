@@ -21,6 +21,7 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
+        <Button type="info" size="small" @click="showDetails(row, index)">查看</Button>
         <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
       </template>
@@ -194,8 +195,28 @@ export default {
           }
         },
         {
-          title: '版本',
-          key: 'version'
+          title: '附件',
+          key: 'version',
+          render: (h, params) => {
+            let att = params.row.attachments
+            if (att.length > 0) {
+              return h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    this.loadAttachment(params)
+                  }
+                }
+              }, '查看')
+            }
+            return h('span', '暂无')
+          }
         },
         {
           title: '操作',
@@ -243,7 +264,6 @@ export default {
       let url = '/posting/listPostingPage/pageNo/' + this.pageNo + '/pageSize/' + this.pageSize
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          console.log(res)
           this.postingData = res.data.content
           this.postingDataTotal = parseInt(res.data.totalElements)
         }
@@ -342,6 +362,7 @@ export default {
       this.pageNo = 0
       this.getPostingPage()
     },
+    showDetails (row, index) {},
     changePageNo (pageNo) {
       this.pageNo = pageNo - 1
     },
@@ -368,6 +389,10 @@ export default {
           this.$Message.success(res.data.message)
         }
       })
+    },
+    loadAttachment (data) {
+      debugger
+      console.log(data.row)
     }
   },
   watch: {

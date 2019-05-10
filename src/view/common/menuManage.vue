@@ -394,7 +394,7 @@ export default {
     getMenuPage () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
-        paramJson: this.searchData
+        name: this.searchData
       }
       let url = '/menu/listMenuPage/pageNo/' + this.pageNo + '/pageSize/' + this.pageSize
       this.$http.post(url, data).then(res => {
