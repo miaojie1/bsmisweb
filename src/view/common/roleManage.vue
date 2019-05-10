@@ -226,7 +226,17 @@ export default {
       this.showEditModal = true
     },
     addRoot (row, index) {
-
+      debugger
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/menu/listMenuTree'
+      this.$http.post(url, data).then(res => {
+        debugger
+        if (res.data.status === true) {
+          this.$Message.success(res.data.message)
+        }
+      })
     },
     confirmDelete () {
       let data = {
