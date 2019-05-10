@@ -187,6 +187,7 @@ export default {
       roleData: [],
       allRoleData: [],
       rootsData: '',
+      currentRoots: '',
       menusData: '',
       formData: {
         name: '',
@@ -225,7 +226,15 @@ export default {
     /**
      * 以下为增加修改删除的弹框控制方法以及提交后台方法
      */
+    resetFields () {
+      this.formData = {
+        name: '',
+        description: '',
+        version: ''
+      }
+    },
     add (index) {
+      this.resetFields()
       this.showAddModal = true
       this.getRoleList()
     },
@@ -242,10 +251,14 @@ export default {
       this.formData = row
       this.getRoots()
       this.showAddRootModal = true
+      this.currentRoots = row.menus
     },
     renderContent (h, { root, node, data }) {
       return h('span', [
         h('Icon', {
+          props: {
+            type: 'md-keypad'
+          },
           style: {
             marginRight: '8px'
           }}), h('span', data.name)])
@@ -279,9 +292,6 @@ export default {
           this.$Message.error('表单数据校验失败!')
         }
       })
-      this.formData.name = ''
-      this.formData.description = ''
-      this.formData.version = ''
     },
     confirmEdit (name) {
       this.$refs[name].validate((valid) => {
@@ -303,21 +313,18 @@ export default {
     cancelEdit (name) {
       this.showEditModal = false
       this.$Message.info('您已取消编辑！')
+      this.resetFields()
     },
     cancelAddRoot () {
       this.showAddRootModal = false
       this.$Message.info('您已取消修改！')
       this.menusData = ''
-      this.formData = {
-        name: '',
-        description: '',
-        version: ''
-      }
+      this.resetFields()
     },
     cancelAdd (name) {
-      this.$refs[name].resetFields()
       this.showAddModal = false
       this.$Message.info('您已取消增加！')
+      this.resetFields()
     },
     cancelDelete () {
       this.showDeleteModal = false
@@ -409,16 +416,5 @@ export default {
 <style>
 .ivu-table-body{
   overflow: hidden;
-}
-.ivu-modal{
-  width: 50vh !important;
-}
-.ivu-modal-content{
-  width: 50vh;
-  height: 70vh;
-}
-.ivu-modal-body{
-  height: 75%;
-  overflow: auto;
 }
 </style>
