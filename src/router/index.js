@@ -81,6 +81,16 @@ export default new Router({
           path: '/posting/announcementDetail:id',
           name: '公告详情',
           component: () => import('@/view/common/announcementDetail')
+        },
+        {
+          path: '/project/listProjects',
+          name: '项目管理',
+          component: () => import('@/view/workManage/projectManage')
+        },
+        {
+          path: '/supervise/listSuperviseDepartManage',
+          name: '监理部管理',
+          component: () => import('@/view/workManage/superviseDepartManage')
         }
       ]
     }
