@@ -65,6 +65,37 @@
         </Layout>
       </Layout>
     </Layout>
+    <Modal
+      v-model="showDetailModal"
+      title="个人信息">
+      <p>姓名：{{usermessage.name}}</p>
+      <p>用户名：{{usermessage.username}}</p>
+      <p>性别：{{usermessage.sex}}</p>
+      <p>邮箱：{{usermessage.email}}</p>
+      <p>手机号：{{usermessage.mobile}}</p>
+      <span>
+        <p v-if="usermessage.chief">上级主管：{{usermessage.chief.name}}</p>
+        <p v-else>上级主管：</p>
+      </span>
+      <p>入职日期：{{usermessage.entryDate}}</p>
+      <p>离职日期：{{usermessage.termDate}}</p>
+      <span>
+        <p v-if="usermessage.employeeStatus">员工状态：{{usermessage.employeeStatus.name}}</p>
+        <p v-else>员工状态：</p>
+      </span>
+      <span>
+        <p v-if="usermessage.department">员工部门：{{usermessage.department.name}}</p>
+        <p v-else>员工部门：</p>
+      </span>
+      <span>
+        <p v-if="usermessage.departmentPosition">员工职位：{{usermessage.departmentPosition.name}}</p>
+        <p v-else>员工职位：</p>
+      </span>
+      <span v-for="(item, index) in usermessage.roles" :key="index">员工角色：{{item.description}}</span>
+      <div slot="footer">
+        <Button type="primary" @click="close">关闭</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -87,13 +118,16 @@ export default {
         }
       ],
       activeName: '',
-      openedMenu: []
+      openedMenu: [],
+      usermessage: '',
+      showDetailModal: false
     }
   },
   created: function () {
     this.init()
     this.$Spin.show()
     this.activeName = this.$route.name
+    this.getCurrentUser()
   },
   methods: {
     linkMenu (url) {
@@ -103,7 +137,8 @@ export default {
     },
     setting (name) {
       if (name === 'infor') {
-        this.$Message.info('点击个人信息！')
+        // this.$Message.info('点击个人信息！')
+        this.getInfo()
       } else if (name === 'setting') {
         this.$Message.info('点击设置')
       } else if (name === 'logout') {
@@ -151,6 +186,24 @@ export default {
           })
         }
       })
+    },
+    getCurrentUser () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/employee/getCurrentUser'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          console.log(res)
+          this.usermessage = res.data
+        }
+      })
+    },
+    getInfo () {
+      this.showDetailModal = true
+    },
+    close () {
+      this.showDetailModal = false
     }
   },
   watch: {
