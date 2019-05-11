@@ -191,12 +191,12 @@ export default {
           key: 'announcer',
           render: (h, params) => {
             const row = params.row
-            return h('Tag', row.announcer.name)
+            return h('span', row.announcer.name)
           }
         },
         {
           title: '附件',
-          key: 'version',
+          key: 'attachments',
           render: (h, params) => {
             let att = params.row.attachments
             if (att.length > 0) {
@@ -221,7 +221,7 @@ export default {
         {
           title: '操作',
           slot: 'action',
-          width: 150,
+          width: 180,
           fixed: 'right'
         }
       ],
@@ -362,7 +362,9 @@ export default {
       this.pageNo = 0
       this.getPostingPage()
     },
-    showDetails (row, index) {},
+    showDetails (row, index) {
+      this.$router.push('/posting/announcementDetail' + row.id)
+    },
     changePageNo (pageNo) {
       this.pageNo = pageNo - 1
     },
@@ -404,7 +406,7 @@ export default {
     },
     buttonList: function (val) {
       val.forEach(element => {
-        if (element.buttonId === 'addBtn') {
+        if (element.buttonId === 'editBtn') {
           this.showAddBtn = true
           this.showEditBtn = true
         } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
