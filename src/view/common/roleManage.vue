@@ -51,9 +51,6 @@
         <FormItem label="角色描述" prop="description">
           <Input v-model="formData.description" placeholder="角色描述" />
         </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -68,10 +65,7 @@
           <Input v-model="formData.name" placeholder="角色名称" />
         </FormItem>
         <FormItem label="角色描述" prop="description">
-          <Input v-model="formData.description" placeholder="description" />
-        </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
+          <Input v-model="formData.description" placeholder="角色描述" />
         </FormItem>
       </Form>
       <div slot="footer">
@@ -93,6 +87,22 @@
       <div slot="footer">
         <Button type="error" @click="confirmDelete()">删除</Button>
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
+      v-model="showAddRootModal"
+      title="角色授权">
+      <Tree
+        :data="allRoleData"
+        children-key="subMenus"
+        :render="renderContent"
+        ref="roleTree"
+        multiple
+        show-checkbox>
+      </Tree>
+      <div slot="footer">
+        <Button type="primary" @click="confirmAddRoot()">提交</Button>
+        <Button @click="cancelAddRoot()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
   </div>
@@ -175,8 +185,13 @@ export default {
           fixed: 'right'
         }
       ],
+      // 列表
       roleData: [],
+      // 分配权限 保存所有资源
       allRoleData: [],
+      rootsData: '',
+      currentRoots: '',
+      menusData: '',
       formData: {
         name: '',
         description: '',
@@ -188,20 +203,24 @@ export default {
           { required: true, message: '不可以为空', trigger: 'blur' }
         ]
       },
+      // 控制各提示框的显示
       showAddModal: false,
       showDeleteModal: false,
       showEditModal: false,
       showAddBtn: false,
       showDeleteBtn: false,
       showEditBtn: false,
+      showAddRootModal: false,
       // 当前选择行的ID
       currentRowId: '',
+      currentRow: {},
       // 分页使用
       pageNo: 0,
       pageSize: 5,
       roleDataTotal: 0,
       // 查询条件
-      searchData: ''
+      searchData: '',
+      selectRoleData: []
     }
   },
   created () {
@@ -212,11 +231,17 @@ export default {
     /**
      * 以下为增加修改删除的弹框控制方法以及提交后台方法
      */
+    resetFields () {
+      this.formData = {
+        name: '',
+        description: ''
+      }
+    },
     add (index) {
+      this.resetFields()
       this.showAddModal = true
       this.getRoleList()
     },
-
     remove (row, index) {
       this.currentRowId = row.id
       this.showDeleteModal = true
@@ -226,17 +251,21 @@ export default {
       this.showEditModal = true
     },
     addRoot (row, index) {
-      debugger
-      let data = {
-        access_token: localStorage.getItem('jwtToken')
-      }
-      let url = '/menu/listMenuTree'
-      this.$http.post(url, data).then(res => {
-        debugger
-        if (res.data.status === true) {
-          this.$Message.success(res.data.message)
-        }
-      })
+      this.formData = row
+      this.getRoots()
+      this.showAddRootModal = true
+      this.currentRoots = row.menus
+      this.currentRow = row
+    },
+    renderContent (h, { root, node, data }) {
+      return h('span', [
+        h('Icon', {
+          props: {
+            type: 'md-keypad'
+          },
+          style: {
+            marginRight: '8px'
+          }}), h('span', data.name)])
     },
     confirmDelete () {
       let data = {
@@ -267,9 +296,6 @@ export default {
           this.$Message.error('表单数据校验失败!')
         }
       })
-      this.formData.name = ''
-      this.formData.description = ''
-      this.formData.version = ''
     },
     confirmEdit (name) {
       this.$refs[name].validate((valid) => {
@@ -291,11 +317,18 @@ export default {
     cancelEdit (name) {
       this.showEditModal = false
       this.$Message.info('您已取消编辑！')
+      this.resetFields()
+    },
+    cancelAddRoot () {
+      this.showAddRootModal = false
+      this.$Message.info('您已取消修改！')
+      this.menusData = ''
+      this.resetFields()
     },
     cancelAdd (name) {
-      this.$refs[name].resetFields()
       this.showAddModal = false
       this.$Message.info('您已取消增加！')
+      this.resetFields()
     },
     cancelDelete () {
       this.showDeleteModal = false
@@ -307,7 +340,19 @@ export default {
       this.pageNo = 0
       this.getRolePage()
     },
-    // 获取菜单资源列表
+    // 获取菜单信息
+    getRoots () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/menu/listMenuTree'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.allRoleData = res.data
+        }
+      })
+    },
+    // 获取角色列表
     getRolePage () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
@@ -326,7 +371,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/role/listAllRoles'
+      let url = '/menu/listMenuTree'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.allRoleData = res.data.content
@@ -345,6 +390,23 @@ export default {
     },
     changePageSize (pageSize) {
       this.pageSize = pageSize
+    },
+    confirmAddRoot () {
+      debugger
+      this.selectRoleData = this.$refs.roleTree.getCheckedAndIndeterminateNodes()
+      // let data = {
+      //   access_token: localStorage.getItem('jwtToken'),
+      //   menus: this.selectRoleData
+      // }
+      console.log(this.selectRoleData)
+      let url = '/role/saveRoleMenus?access_token=' + localStorage.getItem('jwtToken') + '&roleId=' + this.currentRow.id
+      this.$http.postForm(url, JSON.stringify(this.selectRoleData)).then(res => {
+        debugger
+        // if (res.status === 200) {
+        //   this.roleData = res.data.content
+        //   this.roleDataTotal = parseInt(res.data.totalElements)
+        // }
+      })
     }
   },
   components: {
