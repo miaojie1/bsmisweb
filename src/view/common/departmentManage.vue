@@ -7,7 +7,7 @@
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
         <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
-        <Button @click="add" type="primary" style="marign-left: 10px">测试增加</Button>
+        <Button @click="add" type="primary" style="marign-left: 10px">增加</Button>
       </i-col>
     </Row>
     <Table
@@ -22,8 +22,8 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" @click="remove(row, index)">删除</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
