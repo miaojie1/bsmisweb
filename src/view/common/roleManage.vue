@@ -6,7 +6,7 @@
       </i-col>
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
-        <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
+        <Button @click="add" type="primary">添加</Button>
       </i-col>
     </Row>
     <Table
@@ -21,8 +21,8 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="addRoot(row,index)">角色授权</Button>
       </template>
     </Table>
@@ -51,9 +51,6 @@
         <FormItem label="角色描述" prop="description">
           <Input v-model="formData.description" placeholder="角色描述" />
         </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmAdd('formData')">提交</Button>
@@ -69,9 +66,6 @@
         </FormItem>
         <FormItem label="角色描述" prop="description">
           <Input v-model="formData.description" placeholder="角色描述" />
-        </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
         </FormItem>
       </Form>
       <div slot="footer">
@@ -98,7 +92,14 @@
     <Modal
       v-model="showAddRootModal"
       title="角色授权">
-      <Tree :data="menusData" children-key="subMenus" :render="renderContent" show-checkbox></Tree>
+      <Tree
+        :data="allRoleData"
+        children-key="subMenus"
+        :render="renderContent"
+        ref="roleTree"
+        multiple
+        show-checkbox>
+      </Tree>
       <div slot="footer">
         <Button type="primary" @click="confirmAddRoot()">提交</Button>
         <Button @click="cancelAddRoot()" style="margin-left: 8px">取消</Button>
@@ -184,7 +185,9 @@ export default {
           fixed: 'right'
         }
       ],
+      // 列表
       roleData: [],
+      // 分配权限 保存所有资源
       allRoleData: [],
       rootsData: '',
       currentRoots: '',
@@ -210,12 +213,14 @@ export default {
       showAddRootModal: false,
       // 当前选择行的ID
       currentRowId: '',
+      currentRow: {},
       // 分页使用
       pageNo: 0,
       pageSize: 5,
       roleDataTotal: 0,
       // 查询条件
-      searchData: ''
+      searchData: '',
+      selectRoleData: []
     }
   },
   created () {
@@ -229,21 +234,19 @@ export default {
     resetFields () {
       this.formData = {
         name: '',
-        description: '',
-        version: ''
+        description: ''
       }
     },
     add (index) {
       this.resetFields()
       this.showAddModal = true
-      this.getRoleList()
     },
-
     remove (row, index) {
       this.currentRowId = row.id
       this.showDeleteModal = true
     },
     edit (row, index) {
+      debugger
       this.formData = row
       this.showEditModal = true
     },
@@ -252,6 +255,7 @@ export default {
       this.getRoots()
       this.showAddRootModal = true
       this.currentRoots = row.menus
+      this.currentRow = row
     },
     renderContent (h, { root, node, data }) {
       return h('span', [
@@ -336,15 +340,16 @@ export default {
       this.pageNo = 0
       this.getRolePage()
     },
-    // 获取菜单信息
+    // 获取所有的资源列表 不分页
     getRoots () {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/menu/listAllMenus'
+      let url = '/menu/listMenuTree'
       this.$http.post(url, data).then(res => {
+        debugger
         if (res.status === 200) {
-          this.menusData = res.data
+          this.allRoleData = res.data
         }
       })
     },
@@ -362,18 +367,6 @@ export default {
         }
       })
     },
-    // 获取所有的资源列表 不分页
-    getRoleList () {
-      let data = {
-        access_token: localStorage.getItem('jwtToken')
-      }
-      let url = '/menu/listAllMenus'
-      this.$http.post(url, data).then(res => {
-        if (res.status === 200) {
-          this.allRoleData = res.data.content
-        }
-      })
-    },
     changeStatus (status) {
       this.formData.status = status
     },
@@ -386,6 +379,31 @@ export default {
     },
     changePageSize (pageSize) {
       this.pageSize = pageSize
+    },
+    confirmAddRoot () {
+      debugger
+      this.selectRoleData = this.$refs.roleTree.getCheckedAndIndeterminateNodes()
+      for (var i = 0; i < this.selectRoleData.length; i++) {
+        delete this.selectRoleData[i].checked
+        delete this.selectRoleData[i].indeterminate
+        delete this.selectRoleData[i].nodeKey
+      }
+      console.log(this.selectRoleData)
+      let url = '/role/saveRoleMenus?access_token=' + localStorage.getItem('jwtToken') + '&roleId=' + this.currentRow.id
+      this.$http.postForm(url, JSON.stringify(this.selectRoleData)).then(res => {
+        debugger
+        if (res.data.status === true) {
+          this.$Message.success(res.data.message)
+          this.selectRoleData = []
+          this.allRoleData = []
+          this.showAddRootModal = false
+        } else {
+          this.$Message.error(res.data.message)
+          this.selectRoleData = []
+          this.allRoleData = []
+          this.showAddRootModal = false
+        }
+      })
     }
   },
   components: {
