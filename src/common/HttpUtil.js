@@ -34,6 +34,23 @@ var root = 'http://127.0.0.1:8082/supervision'
 // 服务器
 // var root = 'http://241514e6c9.wicp.vip:33846/supervision'
 export default{
+  upload: function (url, params) {
+    return new Promise((resolve, reject) => {
+      axios({
+        method: 'GET',
+        url: url,
+        params: {
+          filePath: params
+        },
+        baseURL: root,
+        responseType: 'blob'
+      }).then((res) => {
+        resolve(res)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  },
   get: function (url, params) {
     return new Promise((resolve, reject) => {
       axios({
