@@ -91,6 +91,11 @@ export default new Router({
           path: '/supervise/listSuperviseDepartManage',
           name: '监理部管理',
           component: () => import('@/view/workManage/superviseDepartManage')
+        },
+        {
+          path: '/dataBackup',
+          name: '数据备份',
+          component: () => import('@/view/workManage/dataBackUp')
         }
       ]
     }
