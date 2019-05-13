@@ -114,10 +114,10 @@
     <Modal
       v-model="showEditModal"
       title="修改用户">
-      <FormItem label="姓名" prop="name">
+      <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
+        <FormItem label="姓名" prop="name">
           <Input v-model="formData.name" placeholder="姓名" />
         </FormItem>
-      <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
         <FormItem label="用户名" prop="username">
           <Input v-model="formData.username" placeholder="用户名" />
         </FormItem>
