@@ -6,7 +6,7 @@
       </i-col>
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
-        <Button @click="add" type="primary" v-show="showAddBtn">添加</Button>
+        <Button @click="add" type="primary">添加</Button>
       </i-col>
     </Row>
     <Table
@@ -21,8 +21,8 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEditBtn" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" @click="remove(row, index)">删除</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -31,7 +31,7 @@
           show-total
           show-elevator
           show-sizer
-          :total="postingDataTotal"
+          :total="projectDataTotal"
           :current="pageNo+1"
           :page-size="pageSize"
           :page-size-opts=[5,10,15]
@@ -146,7 +146,7 @@ export default {
         {
           title: '项目名称',
           key: 'name',
-          width: 100
+          width: 115
         },
         {
           title: '标段',
@@ -175,7 +175,7 @@ export default {
         {
           title: '创建时间',
           key: 'createDate',
-          width: 120,
+          width: 110,
           render: (h, params) => {
             const createDate = params.row.createDate
             if (createDate === null || createDate === '') {
@@ -188,7 +188,7 @@ export default {
         {
           title: '修改时间',
           key: 'modificationDate',
-          width: 120,
+          width: 110,
           render: (h, params) => {
             const modificationDate = params.row.modificationDate
             if (modificationDate === null || modificationDate === '') {
@@ -223,9 +223,6 @@ export default {
       searchData: '',
       projectStatusItem: [],
       managerItem: [],
-      showAddBtn: false,
-      showEditBtn: false,
-      showDeleteBtn: false,
       showDeleteModal: false,
       showAddModal: false,
       showEditModal: false,

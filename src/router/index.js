@@ -96,6 +96,21 @@ export default new Router({
           path: '/dataBackup',
           name: '数据备份',
           component: () => import('@/view/workManage/dataBackUp')
+        },
+        {
+          path: '/supervisionLog/listLogs',
+          name: '监理日志',
+          component: () => import('@/view/workResult/supervisionLog')
+        },
+        {
+          path: '/document/listDocumentLibraryManage',
+          name: '文档库管理',
+          component: () => import('@/view/workResult/documentLibraryManage')
+        },
+        {
+          path: '/document/listDocumentDetail:id',
+          name: '文档库详情',
+          component: () => import('@/view/workResult/documentFolderDetail')
         }
       ]
     }
