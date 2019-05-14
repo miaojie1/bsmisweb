@@ -20,7 +20,7 @@
             <template slot-scope="{ row }" slot="name">
                 <strong>{{ row.name }}</strong>
             </template>
-            <template slot="action" slot-scope="{ row, index }" v-if="knowledgeData">
+            <template slot="action" slot-scope="{ row, index }">
                 <Button type="error" size="small" v-show="showDeleteBtn" @click="remove(row, index)">删除</Button>
                 <Button type="primary" size="small" v-show="showDowloadBtn" @click="dowloadKnowledge(row, index)">下载</Button>
             </template>
@@ -186,7 +186,7 @@ export default {
         access_token: localStorage.getItem('jwtToken')
       }
       console.log(this.searchData)
-      let url = '/knowledge/findKnowledgeByFileName?fileName=' + this.searchData
+      let url = '/knowledge/findKnowledgeByFileNameAndFolder?fileName=' + this.searchData + '&fileFolderId=' + this.fileFolderId
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           console.log(res)
@@ -219,7 +219,7 @@ export default {
     },
     // 下载附件
     dowloadKnowledge (row) {
-      let filePath = row.fileUrl
+      let filePath = row.fileName
       // 由于是ajax调用下载方法，下载数据不会直接下载到本地，所以再创建一个a标签，给它一个 download 属性（HTML5新属性）
       let url = '/knowledge/downloadKnowledge?access_token=' + localStorage.getItem('jwtToken')
       this.$http.upload(url, filePath).then((data) => {
@@ -231,12 +231,12 @@ export default {
         link.style.display = 'none'
         link.href = url
         // 获取文件名
-        let fileName = ''
-        if (filePath.indexOf('/') !== -1) {
-          fileName = filePath.substring(filePath.lastIndexOf('/') + 1)
-        } else {
-          fileName = filePath
-        }
+        let fileName = row.fileName
+        // if (filePath.indexOf('/') !== -1) {
+        //   fileName = filePath.substring(filePath.lastIndexOf('/') + 1)
+        // } else {
+        //   fileName = filePath
+        // }
         // download 属性定义了下载链接的地址而不是跳转路径
         link.setAttribute('download', fileName)
         document.body.appendChild(link)
