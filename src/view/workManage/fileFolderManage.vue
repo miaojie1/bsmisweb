@@ -7,17 +7,18 @@
           <i-col span="13">
             <Button @click="upload" type="primary">上传文件</Button>
             <Button @click="addFileFolder" type="primary">新建文件夹</Button>
-            <Button @click="delFileFolder" type="primary">删除</Button>
+            <!-- <Button @click="editFolder" type="error">修改文件夹</Button> -->
+            <Button @click="delFileFolder" type="error">删除</Button>
           </i-col>
         </Row>
         <div v-if="fileFolderData">
-          <span v-for="(item, index) in fileFolderData" :key="index" :value="item.name"
+          <div v-for="(item, index) in fileFolderData" :key="index" :value="item.name"
             @dblclick="openFileFolder(item)"
-            style="width: 120px; height: 120px; text-align:center; float: left"
-            @click="selectFolder(item.id)">
-              <img :src="fileFolderImg" alt="" style="width: 90px; height: 90px; margin-left: 15px; margin-bottom: -15px"/>
+            style="width: 120px; height: 110px; text-align:center; float: left; margin-top: 10px"
+            @click="selectFolder(item,$event)">
+              <img class="img" :class="{'colordisplay': display}" :src="fileFolderImg" alt="" style="width: 90px; height: 90px; margin-left: 15px; margin-bottom: -10px"/>
               <span>{{item.name}}</span>
-          </span>
+          </div>
         </div>
         <Modal v-model="showAddFileFolderModal" title="新增文件夹">
           <Form ref="formFileFoderData" :model="formFileFoderData" :rules="ruleValidate" :label-width="100">
@@ -56,6 +57,7 @@ import fileFolderImg from '../../assets/fileFolderLogo.png'
 export default {
   data () {
     return {
+      display: false,
       fileFolderImg: fileFolderImg,
       fileFolderData: [],
       formFileFoderData: {
@@ -125,8 +127,9 @@ export default {
             fileFolder: fileFolder}
         })
     },
-    selectFolder (itemId) {
-      this.currentId = itemId
+    selectFolder (item, $event) {
+      $event.currentTarget.style.color = 'blue'
+      this.currentId = item.id
     },
     delFileFolder () {
       this.showDeleteModal = true
@@ -147,7 +150,13 @@ export default {
     cancelDelete () {
       this.showDeleteModal = false
       this.$Message.info('您已取消删除！')
+      this.getFileFolder()
     }
   }
 }
 </script>
+<style>
+.colordisplay {
+  background-color:darkseagreen
+}
+</style>
