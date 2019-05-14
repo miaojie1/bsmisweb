@@ -111,6 +111,16 @@ export default new Router({
           path: '/document/listDocumentDetail:id',
           name: '文档库详情',
           component: () => import('@/view/workResult/documentFolderDetail')
+        },
+        {
+          path: '/fileFolder/listFileFolder',
+          name: '知识库管理',
+          component: () => import('@/view/workManage/fileFolderManage')
+        },
+        {
+          path: '/knowledge/listKnowledges',
+          name: '文件管理',
+          component: () => import('@/view/workManage/knowledgeManage')
         }
       ]
     }
