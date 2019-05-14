@@ -103,6 +103,11 @@ export default new Router({
           component: () => import('@/view/workResult/supervisionLog')
         },
         {
+          path: '/supervisionLog/logRecords',
+          name: '监理日志记录',
+          component: () => import('@/view/workResult/supLogRecord')
+        },
+        {
           path: '/document/listDocumentLibraryManage',
           name: '文档库管理',
           component: () => import('@/view/workResult/documentLibraryManage')
