@@ -194,7 +194,6 @@ export default {
       let url = '/employee/getCurrentUser'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          console.log(res)
           this.usermessage = res.data
         }
       })

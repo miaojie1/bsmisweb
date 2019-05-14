@@ -1,27 +1,45 @@
 <template>
   <div>
     <Row>
-      选择用户：
-      <Select v-model="selectedName" clearable style="width:200px">
-        <Option v-for="item in employeeList" :value="item.username" placeholder="选择用户" :key="item.value">{{ item.username }}</Option>
-      </Select>
-      <Button type="primary" @click="addSupLog">测试监理日志</Button>
+      <center>
+        <h2>监理日志信息</h2>
+      </center>
+      <div style="margin-top:20px">
+        <Row :gutter="16">
+          <i-col span="8">
+            日志日期：
+            {{logDate}}
+          </i-col>
+          <i-col span="8">
+            监理工程师：
+            {{logName}}
+          </i-col>
+          <i-col span="6">
+            职位:
+            {{logPositoin}}
+          </i-col>
+          <i-col span="2">
+            <div @click="goBack" id="backBtn">
+              <Icon type="md-arrow-round-up" size="25"/>
+              <font>Back</font>
+            </div>
+          </i-col>
+        </Row>
+      </div>
     </Row>
     <Table
       border
       highlight-row
       ref="supLogTable"
       :columns="columns"
-      :data="supLogData"
+      :data="supLogRecordData"
       style="margin-top: 30px"
       size="small">
       <template slot-scope="{ row }" slot="name">
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <!-- <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button> -->
         <Button type="error" size="small" @click="remove(row, index)">删除</Button>
-        <Button type="success" size="small" @click="showDetails(row,index)">详情</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -63,11 +81,13 @@ export default {
   data () {
     return {
       supLogData: [],
-      employeeList: [],
+      supLogRecordData: [],
+      logDate: '',
+      logName: '',
+      logPositoin: '',
       pageSize: 5,
       pageNo: 0,
       dataTotal: 0,
-      fileName: '',
       columns: [
         {
           title: 'ID',
@@ -75,72 +95,59 @@ export default {
           width: 50
         },
         {
-          title: '日期',
-          key: 'date',
+          title: '发生时间',
+          key: 'recordDate',
           width: 130
         },
         {
-          title: '监理工程师',
-          key: 'supervisionEngineer',
+          title: '对应项目',
+          key: 'project',
           render: (h, params) => {
-            const employee = params.row.supervisionEngineer
-            return h('span', employee.username)
+            return h('span', params.row.project.name)
           }
         },
         {
-          title: '职位',
-          key: 'position'
+          title: '记录内容',
+          key: 'recordContent'
         },
         {
           title: '操作',
           slot: 'action',
-          width: 220,
+          width: 100,
           fixed: 'right'
         }
       ],
-      selectedName: '',
       showDeleteModal: false
     }
   },
   created: function () {
-    this.getsupLogDataList()
-    this.getEmployeeList()
+    debugger
+    this.supLogData = JSON.parse(localStorage.getItem('supLog'))
+    const engineer = this.supLogData.supervisionEngineer
+    const position = this.supLogData.position
+    if (position === null) {
+      this.logPositoin = '暂无信息'
+    } else {
+      this.logPositoin = position.name
+    }
+    this.logName = engineer.username
+    this.logDate = this.supLogData.date
+    this.logDate = this.logDate.substring(0, 10)
+    debugger
+    this.getsupLogRecordDataList()
   },
   methods: {
-    addSupLog () {
-      let data = {
-        access_token: localStorage.getItem('jwtToken')
-      }
-      let url = '/superLogJob/addSupLogForTest'
-      this.$http.post(url, data).then(res => {
-        if (res.data.status === true) {
-          this.getsupLogDataList()
-        }
-      })
-    },
-    getsupLogDataList () {
+    getsupLogRecordDataList () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
         pageNo: this.pageNo,
-        pageSize: this.pageSize,
-        username: this.selectedName
+        pageSize: this.pageSize
       }
-      let url = '/superLogJob/listSupervisionLogByPage'
+      let url = '/superLogJob/listSuperLogRecordByPage'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          this.supLogData = res.data.content
+          this.supLogRecordData = res.data.content
           this.dataTotal = res.data.totalElements
-        }
-      })
-    },
-    getEmployeeList () {
-      let data = {
-        access_token: localStorage.getItem('jwtToken')
-      }
-      let url = '/employee/listAllEmployees'
-      this.$http.post(url, data).then(res => {
-        if (res.status === 200) {
-          this.employeeList = res.data
         }
       })
     },
@@ -151,14 +158,14 @@ export default {
     confirmDelete () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
-        logId: this.currentRowId
+        logRecordId: this.currentRowId
       }
-      let url = '/superLogJob/deleteSupLogById'
+      let url = '/superLogJob/deleteSupLogRecordById'
       this.$http.post(url, data).then(res => {
         this.showDeleteModal = false
         if (res.data.status === true) {
           this.$Message.success(res.data.message)
-          this.getsupLogDataList()
+          this.getsupLogRecordDataList()
         }
       })
     },
@@ -167,11 +174,10 @@ export default {
       this.currentRowId = ''
       this.$Message.info('您已取消删除！')
     },
-    showDetails (row, index) {
+    goBack () {
       this.$router.push({
-        path: '/supervisionLog/logRecords'
+        name: '监理日志'
       })
-      localStorage.setItem('supLog', JSON.stringify(row))
     },
     // 分页
     changePageNo (pageNo) {
@@ -183,18 +189,19 @@ export default {
   },
   watch: {
     pageNo: function () {
-      this.getsupLogDataList()
+      this.getsupLogRecordDataList()
     },
     pageSize: function () {
-      this.getsupLogDataList()
-    },
-    selectedName: function () {
-      this.getsupLogDataList()
+      this.getsupLogRecordDataList()
     }
   }
 }
 </script>
 
 <style>
-
+#backBtn :hover {
+  cursor: pointer;
+  color: rgb(30, 138, 210);
+  font-size: 15px;
+}
 </style>
