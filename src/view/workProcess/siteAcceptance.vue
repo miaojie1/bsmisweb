@@ -21,8 +21,8 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="currentRank < row.originRank" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" v-show="currentRank < row.originRank" @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
       </template>
     </Table>
@@ -224,11 +224,14 @@ export default {
       showDeleteModal: false,
       showAddModal: false,
       showEditModal: false,
-      currentProjectName: ''
+      currentProjectName: '',
+      currentRank: 0
     }
   },
   created: function () {
     this.getsiteAcceptDataList()
+    const departmentPosition = JSON.parse(localStorage.getItem('currentUser')).departmentPosition
+    this.currentRank = departmentPosition.rank
     // this.getEmployeeList()
   },
   methods: {
