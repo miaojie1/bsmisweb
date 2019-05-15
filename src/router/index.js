@@ -131,6 +131,16 @@ export default new Router({
           path: '/siteAccept/listsiteAcceptances',
           name: '进场验收',
           component: () => import('@/view/workProcess/siteAcceptance')
+        },
+        {
+          path: '/pictureFolder/listPicFolderPage',
+          name: '影像资料管理',
+          component: () => import('@/view/workResult/pictureFolderManager')
+        },
+        {
+          path: '/pictureFolder/listPictures:id',
+          name: '影像资料详情',
+          component: () => import('@/view/workResult/pictureManager')
         }
       ]
     }
