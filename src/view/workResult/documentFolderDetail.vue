@@ -1,5 +1,19 @@
 <template>
   <div>
+    <Row :gutter="16">
+      <i-col span="8">
+        <Input suffix="ios-search" placeholder="请输入文件名进行查询···" v-model="searchDocumentName"/>
+      </i-col>
+      <i-col span="5">  
+        <Select style="width:200px" v-model="searchDocumentCategory"  @change="changeCategory($event)">
+          <Option v-for="(item,index) in documentCategoryItem" :value="item.id" :key="index">{{item.name}}
+          </Option>
+        </Select>
+      </i-col>
+      <i-col span="3">
+        <Button @click="search" type="primary">查询</Button>
+      </i-col>
+    </Row>
     <Table
       border
       highlight-row
@@ -103,13 +117,18 @@ export default {
       documentDataTotal: 0,
       showDeleteModal: false,
       currentRowId: '',
-      buttonList: []
+      buttonList: [],
+      searchDocumentName: '',
+      searchDocumentCategory: '',
+      documentCategoryItem: []
     }
   },
   methods: {
     requsetData (id) {
       let data = {
-        access_token: localStorage.getItem('jwtToken')
+        access_token: localStorage.getItem('jwtToken'),
+        documentName: this.searchDocumentName,
+        documentCategoryId: this.searchDocumentCategory
       }
       let url = '/document/listDocumentByFolderPage/documentFolderId/' + id + '/pageNo/' + this.pageNo + '/pageSize/' + this.pageSize
       this.$http.post(url, data).then(res => {
@@ -119,6 +138,9 @@ export default {
           this.documentDataTotal = res.data.totalElements
         }
       })
+    },
+    changeCategory (event) {
+      this.searchDocumentCategory = event.target.value
     },
     changePageNo (pageNo) {
       this.pageNo = pageNo - 1
@@ -176,12 +198,29 @@ export default {
         document.body.appendChild(link)
         link.click()
       })
+    },
+    getDocumentCategory () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/documentCategory/listAllDocumentCategories'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.documentCategoryItem = res.data
+        }
+      })
+    },
+    search () {
+      this.pageNo = 0
+      let id = this.$route.params.id
+      this.requsetData(id)
     }
   },
   created () {
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
     let id = this.$route.params.id
     this.requsetData(id)
+    this.getDocumentCategory()
   },
   watch: {
     pageNo: function () {
