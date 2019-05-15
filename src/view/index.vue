@@ -195,6 +195,7 @@ export default {
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.usermessage = res.data
+          localStorage.setItem('currentUser', JSON.stringify(res.data))
         }
       })
     },
@@ -276,5 +277,6 @@ export default {
 .navContainer {
   background: #fff;
   height: 90vh;
+  overflow-y: auto;
 }
 </style>
