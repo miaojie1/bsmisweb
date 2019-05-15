@@ -2,12 +2,12 @@
     <div>
         <Row :gutter="18">
           <i-col span="5">
-            <Input suffix="ios-search" placeholder="请输入文件名称查询···" v-model="searchData"/>
+            <Input suffix="ios-search" placeholder="请输入文件夹名称查询···" v-model="searchData"/>
           </i-col>
           <i-col span="13">
-            <Button @click="upload" type="primary">上传文件</Button>
+            <Button @click="search" type="primary">查询</Button>
+            <!-- <Button @click="upload" type="primary">上传文件</Button> -->
             <Button @click="addFileFolder" type="primary">新建文件夹</Button>
-            <!-- <Button @click="editFolder" type="error">修改文件夹</Button> -->
             <Button @click="delFileFolder" type="error">删除</Button>
           </i-col>
         </Row>
@@ -71,7 +71,8 @@ export default {
       },
       showAddFileFolderModal: false,
       showDeleteModal: false,
-      currentId: ''
+      currentId: '',
+      searchData: ''
     }
   },
   created () {
@@ -79,6 +80,7 @@ export default {
   },
   methods: {
     addFileFolder () {
+      this.formFileFoderData = {}
       this.showAddFileFolderModal = true
     },
     getFileFolder () {
@@ -151,6 +153,18 @@ export default {
       this.showDeleteModal = false
       this.$Message.info('您已取消删除！')
       this.getFileFolder()
+    },
+    search () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/fileFolder/findFileFolderByName?name=' + this.searchData
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          console.log(res)
+          this.fileFolderData = res.data
+        }
+      })
     }
   }
 }
