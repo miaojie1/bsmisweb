@@ -126,6 +126,11 @@ export default new Router({
           path: '/knowledge/listKnowledges',
           name: '文件管理',
           component: () => import('@/view/workManage/knowledgeManage')
+        },
+        {
+          path: '/siteAccept/listsiteAcceptances',
+          name: '进场验收',
+          component: () => import('@/view/workProcess/siteAcceptance')
         }
       ]
     }
