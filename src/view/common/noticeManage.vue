@@ -15,8 +15,7 @@
       :columns="columns"
       :data="postingData"
       style="margin-top: 15px"
-      size="small"
-      @on-row-click="handleClickRow">
+      size="small">
       <template slot-scope="{ row }" slot="name">
         <strong>{{ row.name }}</strong>
       </template>
@@ -56,7 +55,6 @@
             placement="bottom-end"
             placeholder="选择生效日期以及失效日期"
             confirm
-            v-model="effectAndExpireDate"
             @on-change="changeEffectAndExpireDate"
             @on-clear="handleClearDate"
             ></DatePicker>
@@ -88,18 +86,24 @@
         <FormItem label="生效-失效日期" prop="effectAndExpireDate">
           <DatePicker type="daterange"
           placement="bottom-end"
-          :placeholder="effectAndExpireDate"
           confirm
-          v-model="effectAndExpireDate"
+          :placeholder="effectAndExpireDate"
           @on-change="changeEffectAndExpireDate"
           @on-clear="handleClearDate"
           ></DatePicker>
         </FormItem>
-        <!-- <FormItem label="添加附件" prop="attachments">
-          <Upload action="//jsonplaceholder.typicode.com/posts/">
+        <FormItem label="附件" prop="attachments">
+          <p v-for="file in formData.attachments" :key="file.id">
+            <Icon type="ios-document" size="28"></Icon>{{file.name}}
+            <Button type="error" @click="removeAttachment(file.id)">删除</Button>
+          </p>
+          <Upload
+            :action="actionUrl"
+            :on-success="onFileSuccess"
+            name="file">
             <Button icon="ios-cloud-upload-outline">点击上传附件</Button>
           </Upload>
-        </FormItem> -->
+        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmEdit('formData')">提交</Button>
@@ -119,6 +123,22 @@
       </div>
       <div slot="footer">
         <Button type="error" @click="confirmDelete()">删除</Button>
+        <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
+      v-model="showDeleteAttachmentModal"
+      width="360">
+      <p slot="header" style="color:#f60;text-align:center">
+          <Icon type="ios-information-circle"></Icon>
+          <span>删除提醒</span>
+      </p>
+      <div style="text-align:center">
+          <p>删除后将不可恢复</p>
+          <p>您确认删除?</p>
+      </div>
+      <div slot="footer">
+        <Button type="error" @click="confirmAttachmentDelete()">删除</Button>
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
@@ -230,9 +250,6 @@ export default {
       pageNo: 0,
       pageSize: 2,
       postingDataTotal: 0,
-      showAddBtn: false,
-      showEditBtn: false,
-      showDeleteBtn: false,
       searchData: '',
       formData: {},
       // 校验规则
@@ -244,11 +261,13 @@ export default {
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
+      showDeleteAttachmentModal: false,
       effectAndExpireDate: '',
       currentRowId: '',
       currentRow: '',
       actionUrl: '',
-      attachmentId: ''
+      attachmentId: '',
+      deleteAttachmentId: ''
     }
   },
   created () {
@@ -286,8 +305,6 @@ export default {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let url = '/posting/savePosting?access_token=' + localStorage.getItem('jwtToken') + '&attachmentId=' + this.attachmentId
-          console.log('_____________________________________')
-          console.log(this.formData)
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
             if (res.data.status === true) {
@@ -295,7 +312,8 @@ export default {
               this.$refs.formData.resetFields()
               this.$Message.success(res.data.message)
             } else {
-              this.removeAttachment()
+              this.deleteAttachmentId = this.attachmentId
+              this.confirmAttachmentDelete()
               this.$Message.error(res.data.message)
             }
           })
@@ -311,21 +329,24 @@ export default {
     },
     edit (row, index) {
       this.formData = row
-      this.effectAndExpireDate = row.effectDate.substring(0, 10) + '-' + row.expireDate.substring(0, 10)
+      this.effectAndExpireDate = '' + row.effectDate.substring(0, 10) + '-' + row.expireDate.substring(0, 10) + ''
       this.showEditModal = true
+      this.actionUrl = 'http://127.0.0.1:8082/supervision/attachment/upload?access_token=' + localStorage.getItem('jwtToken')
     },
     confirmEdit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$http.postForm('/posting/savePosting?access_token=' + localStorage.getItem('jwtToken'), JSON.stringify(this.formData)).then(res => {
-            this.showEditModal = false
+          let url = '/posting/savePosting?access_token=' + localStorage.getItem('jwtToken') + '&attachmentId=' + this.attachmentId
+          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             if (res.data.status === true) {
               this.getPostingPage()
-              this.$refs.formData.resetFields()
               this.$Message.success(res.data.message)
             } else {
+              this.deleteAttachmentId = this.attachmentId
+              this.confirmAttachmentDelete()
               this.$Message.error(res.data.message)
             }
+            this.showEditModal = false
           })
         } else {
           this.$Message.error('表单数据校验失败!')
@@ -371,24 +392,23 @@ export default {
     changePageSize (pageSize) {
       this.pageSize = pageSize
     },
-    handleClickRow (data, index) {
-      this.currentRowId = data.id
-      this.currentRow = data
-      this.formData = data
-    },
     onFileSuccess (response, file, fileList) {
       this.attachmentId = response
     },
-    removeAttachment () {
+    removeAttachment (id) {
+      this.deleteAttachmentId = id
+      this.showDeleteAttachmentModal = true
+    },
+    confirmAttachmentDelete () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
-        attachmentId: this.attachmentId
+        attachmentId: this.deleteAttachmentId
       }
-      debugger
       let url = '/attachment/deleteAttachment'
       this.$http.post(url, data).then(res => {
         if (res.data.status === true) {
           this.$Message.success(res.data.message)
+          this.showDeleteAttachmentModal = false
         }
       })
     },
