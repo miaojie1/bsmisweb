@@ -141,6 +141,11 @@ export default new Router({
           path: '/pictureFolder/listPictures:id',
           name: '影像资料详情',
           component: () => import('@/view/workResult/pictureManager')
+        },
+        {
+          path: '/documentAudit/listDocumentAudits',
+          name: '文件审核',
+          component: () => import('@/view/workProcess/documentAudit')
         }
       ]
     }

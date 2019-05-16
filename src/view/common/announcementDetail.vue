@@ -3,18 +3,18 @@
     <h2 style="text-align: center">{{announcementData.name}}</h2>
     <Divider />
     <Row :gutter="16" type="flex" justify="center" class="code-row-bg">
-      <Col span="5">
+      <i-col span="5">
         <div>创建时间：{{announcementData.createDate.substring(0, 10)}}</div>
-      </Col>
-      <Col span="5">
+      </i-col>
+      <i-col span="5">
         <div>修改时间：{{announcementData.modificationDate.substring(0, 10)}}</div>
-      </Col>
-      <Col span="5">
+      </i-col>
+      <i-col span="5">
         <div>生效时间：{{announcementData.effectDate.substring(0, 10)}}</div>
-      </Col>
-      <Col span="5">
+      </i-col>
+      <i-col span="5">
         <div>失效时间：{{announcementData.expireDate.substring(0, 10)}}</div>
-      </Col>
+      </i-col>
     </Row>
     <Divider />
     <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{announcementData.content}}</p>

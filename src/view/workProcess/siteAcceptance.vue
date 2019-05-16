@@ -246,14 +246,12 @@ export default {
       showEditModal: false,
       currentProjectName: '',
       currentRank: 0,
-      currentEmplId: 0,
-      currentEmpl: {}
+      currentEmplId: 0
     }
   },
   created: function () {
     this.getsiteAcceptDataList()
     const departmentPosition = JSON.parse(localStorage.getItem('currentUser')).departmentPosition
-    this.currentEmpl = JSON.parse(localStorage.getItem('currentUser'))
     this.currentEmplId = JSON.parse(localStorage.getItem('currentUser')).id
     this.currentRank = departmentPosition.rank
     // this.getEmployeeList()
