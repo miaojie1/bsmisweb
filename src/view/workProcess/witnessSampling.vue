@@ -160,7 +160,7 @@ export default {
         {
           title: '状态',
           key: 'isSubmit',
-          width: 100,
+          width: 140,
           render: (h, params) => {
             const Row = params.row
             const color = Row.isSubmit === 0 ? 'default' : 'success'
@@ -276,7 +276,7 @@ export default {
       this.formData = row
       this.showEditModal = true
     },
-    getsiteAcceptDataList () {
+    getWitnessSamplingDataList () {
       let data = {
         access_token: localStorage.getItem('jwtToken'),
         pageNo: this.pageNo,
@@ -288,6 +288,7 @@ export default {
         if (res.status === 200) {
           this.witnessSamplingData = res.data.content
           this.dataTotal = res.data.totalElements
+          console.log(res)
         }
       })
     },
@@ -340,7 +341,7 @@ export default {
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showEditModal = false
             if (res.data.status === true) {
-              this.getWitnessSamplingList()
+              this.getWitnessSamplingDataList()
               this.$Message.success(res.data.message)
               this.$refs[name].resetFields()
             } else {
