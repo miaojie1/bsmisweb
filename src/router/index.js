@@ -146,6 +146,21 @@ export default new Router({
           path: '/documentAudit/listDocumentAudits',
           name: '文件审核',
           component: () => import('@/view/workProcess/documentAudit')
+        },
+        {
+          path: '/conference/listConference',
+          name: '监理会议',
+          component: () => import('@/view/workProcess/superviseConference')
+        },
+        {
+          path: '/witnessSampling/listWitnessSampling',
+          name: '见证取样',
+          component: () => import('@/view/workProcess/witnessSampling')
+        },
+        {
+          path: '/patrol/listPatrol',
+          name: '巡视',
+          component: () => import('@/view/workProcess/patrol')
         }
       ]
     }
