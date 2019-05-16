@@ -70,7 +70,7 @@
           <Input v-model="formData.location" placeholder="地点" />
         </FormItem>
         <FormItem label="会议总结" prop="conferenceSummaryList">
-          <Select style="width:200px" v-model="formData.conferenceSummaryList">
+          <Select style="width:200px" v-model="formData.conferenceSummaryList" multiple>
             <Option v-for="item in conferenceSummaryListItem" :value="item" :key="item.id" name="conferenceSummaryList">{{item.name }}
             </Option>
           </Select>
@@ -112,7 +112,7 @@
           <Input v-model="formData.location" placeholder="地点" />
         </FormItem>
         <FormItem label="会议总结" prop="conferenceSummaryList">
-          <Select style="width:200px" v-model="formData.conferenceSummaryList">
+          <Select style="width:200px" v-model="formData.conferenceSummaryList" multiple>
             <Option v-for="item in conferenceSummaryListItem" :value="item" :key="item.id" name="conferenceSummaryList">{{item.name }}
             </Option>
           </Select>
@@ -240,7 +240,18 @@ export default {
       formData: {},
       initiatorItem: [],
       conferenceSummaryListItem: [],
-      ruleValidate: [],
+      ruleValidate: {
+        content: [
+          {
+            required: true, message: '不可以为空', trigger: 'blur'
+          }
+        ],
+        location: [
+          {
+            required: true, message: '不可以为空', trigger: 'blur'
+          }
+        ]
+      },
       pageSize: 5,
       pageNo: 0,
       dataTotal: 0,
@@ -276,6 +287,9 @@ export default {
     remove (row, index) {
       this.currentRowId = row.id
       this.showDeleteModal = true
+    },
+    search () {
+      this.getConference()
     },
     changestartEndTime (val, value) {
       this.formData.startDate = val[0]
