@@ -21,8 +21,10 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="currentRank < row.originRank" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" v-show="currentRank < row.originRank" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" style="margin-right: 1px"
+        v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small"
+        v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
       </template>
     </Table>
@@ -64,7 +66,8 @@
         </FormItem>
       </Form>
       <div slot="footer">
-        <Button type="primary" @click="confirmAdd('formData')">提交</Button>
+        <Button type="primary" @click="confirmAdd('formData', 0)">保存</Button>
+        <Button type="primary" @click="confirmAdd('formData', 1)">提交</Button>
         <Button @click="cancelAdd('formData')" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
@@ -91,7 +94,8 @@
         </FormItem>
       </Form>
       <div slot="footer">
-        <Button type="primary" @click="confirmEdit('formData')">提交</Button>
+        <Button type="primary" @click="confirmEdit('formData', 0)">保存</Button>
+        <Button type="primary" @click="confirmEdit('formData', 1)">提交</Button>
         <Button @click="canceEdit('formData')" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
@@ -164,6 +168,22 @@ export default {
           }
         },
         {
+          title: '状态',
+          key: 'isSubmit',
+          width: 140,
+          render: (h, params) => {
+            const Row = params.row
+            const color = Row.isSubmit === 0 ? 'default' : 'success'
+            const text = Row.isSubmit === 0 ? '未提交' : '已提交'
+            return h('Tag', {
+              props: {
+                type: 'dot',
+                color: color
+              }
+            }, text)
+          }
+        },
+        {
           title: '数量',
           key: 'quantity',
           width: 50
@@ -225,12 +245,16 @@ export default {
       showAddModal: false,
       showEditModal: false,
       currentProjectName: '',
-      currentRank: 0
+      currentRank: 0,
+      currentEmplId: 0,
+      currentEmpl: {}
     }
   },
   created: function () {
     this.getsiteAcceptDataList()
     const departmentPosition = JSON.parse(localStorage.getItem('currentUser')).departmentPosition
+    this.currentEmpl = JSON.parse(localStorage.getItem('currentUser'))
+    this.currentEmplId = JSON.parse(localStorage.getItem('currentUser')).id
     this.currentRank = departmentPosition.rank
     // this.getEmployeeList()
   },
@@ -308,10 +332,11 @@ export default {
         }
       })
     },
-    confirmAdd (name) {
+    confirmAdd (name, isSubmit) {
       if (this.formData.project === undefined || this.formData.project === null) {
         this.$Message.error('请选择所属项目！')
       } else {
+        this.formData.isSubmit = isSubmit
         this.$refs[name].validate((valid) => {
           if (valid) {
             let url = '/siteAcceptance/saveSiteAcceptance?access_token=' + localStorage.getItem('jwtToken')
@@ -332,11 +357,12 @@ export default {
         })
       }
     },
-    confirmEdit (name) {
+    confirmEdit (name, isSubmit) {
       if (this.formData.project === undefined || this.formData.project === null) {
         this.$Message.error('请选择所属项目！')
       } else {
         this.$refs[name].validate((valid) => {
+          this.formData.isSubmit = isSubmit
           if (valid) {
             let url = '/siteAcceptance/saveSiteAcceptance?access_token=' + localStorage.getItem('jwtToken')
             this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
