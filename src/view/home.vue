@@ -131,7 +131,6 @@ export default {
       let url = '/posting/listExpPostingPage'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          console.log(res)
           this.expPostingData = res.data
         }
       })

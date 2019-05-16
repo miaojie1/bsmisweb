@@ -91,7 +91,7 @@
           <Input v-model="formData.section" placeholder="标段" />
         </FormItem>
         <FormItem label="项目状态" prop="projectStatus">
-          <Select style="width:200px" v-model="formData.projectStatus">
+          <Select style="width:200px" v-model="formData.projectStatus" :placeholder="currentProjectStatusName">
             <Option v-for="item in projectStatusItem" :value="item" :key="item.id" name="projectStatus">{{item.name }}
             </Option>
           </Select>
@@ -103,7 +103,7 @@
           <Input v-model="formData.development" placeholder="建设单位" />
         </FormItem>
         <FormItem label="项目经理" prop="manager">
-          <Select style="width:200px" v-model="formData.manager">
+          <Select style="width:200px" v-model="formData.manager" :placeholder="currentManagerName">
             <Option v-for="item in managerItem" :value="item" :key="item.id" name="manager">{{item.name }}
             </Option>
           </Select>
@@ -221,6 +221,8 @@ export default {
       pageSize: 2,
       projectDataTotal: 0,
       searchData: '',
+      currentManagerName: '',
+      currentProjectStatusName: '',
       projectStatusItem: [],
       managerItem: [],
       showDeleteModal: false,
@@ -251,7 +253,6 @@ export default {
         if (res.status === 200) {
           this.projectData = res.data.content
           this.projectDataTotal = parseInt(res.data.totalElements)
-          console.log(res)
         }
       })
     },
@@ -266,6 +267,8 @@ export default {
     edit (row, index) {
       this.formData = row
       this.showEditModal = true
+      this.currentManagerName = row.manager.name
+      this.currentProjectStatusName = row.projectStatus.name
     },
     // 获取项目状态
     getProjectStatus () {
