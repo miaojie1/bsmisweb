@@ -4,7 +4,7 @@
       <i-col span="8">
         <Input suffix="ios-search" placeholder="请输入文件名进行查询···" v-model="searchDocumentName"/>
       </i-col>
-      <i-col span="5">  
+      <i-col span="5">
         <Select style="width:200px" v-model="searchDocumentCategory"  @change="changeCategory($event)">
           <Option v-for="(item,index) in documentCategoryItem" :value="item.id" :key="index">{{item.name}}
           </Option>
