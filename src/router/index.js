@@ -141,6 +141,11 @@ export default new Router({
           path: '/pictureFolder/listPictures:id',
           name: '影像资料详情',
           component: () => import('@/view/workResult/pictureManager')
+        },
+        {
+          path: '/conference/listConference',
+          name: '监理会议',
+          component: () => import('@/view/workProcess/superviseConference')
         }
       ]
     }
