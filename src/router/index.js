@@ -143,6 +143,11 @@ export default new Router({
           component: () => import('@/view/workResult/pictureManager')
         },
         {
+          path: '/documentAudit/listDocumentAudits',
+          name: '文件审核',
+          component: () => import('@/view/workProcess/documentAudit')
+        },
+        {
           path: '/conference/listConference',
           name: '监理会议',
           component: () => import('@/view/workProcess/superviseConference')
