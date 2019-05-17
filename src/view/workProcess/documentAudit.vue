@@ -2,7 +2,7 @@
   <div>
     <Row :gutter="16">
       <i-col span="8">
-        <Input suffix="ios-search" placeholder="请输入文件名进行查询···" v-model="documentName"/>
+        <Input suffix="ios-search" clearable placeholder="请输入标题进行查询···" v-model="documentName"/>
       </i-col>
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
@@ -272,10 +272,12 @@ export default {
     }
   },
   created () {
+    this.getDocumentAudits()
+    debugger
     const departmentPosition = JSON.parse(localStorage.getItem('currentUser')).departmentPosition
     this.currentEmplId = JSON.parse(localStorage.getItem('currentUser')).id
     this.currentRank = departmentPosition.rank
-    this.getDocumentAudits()
+    debugger
   },
   methods: {
     getDocumentAudits () {

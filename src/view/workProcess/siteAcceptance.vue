@@ -2,7 +2,7 @@
   <div>
     <Row :gutter="16">
       <i-col span="8">
-        <Input suffix="ios-search" placeholder="输入材料名称查询" v-model="materialName"/>
+        <Input suffix="ios-search" clearable placeholder="输入材料名称查询" v-model="materialName"/>
       </i-col>
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>

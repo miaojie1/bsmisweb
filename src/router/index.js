@@ -163,6 +163,11 @@ export default new Router({
           component: () => import('@/view/workProcess/patrol')
         },
         {
+          path: '/accountRecord/listAccRecords',
+          name: '监理台账',
+          component: () => import('@/view/workResult/accountRecord')
+        },
+        {
           path: '/sideStation/listSideStation',
           name: '旁站',
           component: () => import('@/view/workProcess/sideStation')
