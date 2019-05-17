@@ -161,6 +161,11 @@ export default new Router({
           path: '/patrol/listPatrol',
           name: '巡视',
           component: () => import('@/view/workProcess/patrol')
+        },
+        {
+          path: '/sideStation/listSideStation',
+          name: '旁站',
+          component: () => import('@/view/workProcess/sideStation')
         }
       ]
     }
