@@ -166,6 +166,11 @@ export default new Router({
           path: '/sideStation/listSideStation',
           name: '旁站',
           component: () => import('@/view/workProcess/sideStation')
+        },
+        {
+          path: '/checkAcceptance/listCheckAcceptance',
+          name: '检查验收',
+          component: () => import('@/view/workProcess/checkAcceptance')
         }
       ]
     }
