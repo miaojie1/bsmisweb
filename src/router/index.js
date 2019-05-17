@@ -161,6 +161,11 @@ export default new Router({
           path: '/patrol/listPatrol',
           name: '巡视',
           component: () => import('@/view/workProcess/patrol')
+        },
+        {
+          path: '/accountRecord/listAccRecords',
+          name: '监理台账',
+          component: () => import('@/view/workResult/accountRecord')
         }
       ]
     }
