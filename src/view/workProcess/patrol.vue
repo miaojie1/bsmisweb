@@ -308,7 +308,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/project/listAllProjects'
+      let url = '/patrol/listAllProjects'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.projectList = res.data
