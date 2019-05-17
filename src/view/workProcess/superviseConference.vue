@@ -210,7 +210,7 @@ export default {
           }
         },
         {
-          title: '评述',
+          title: '备注',
           key: 'remark',
           width: 100
         },
@@ -289,6 +289,8 @@ export default {
       this.showDeleteModal = true
     },
     search () {
+      this.pageSize = 5
+      this.pageNo = 0
       this.getConference()
     },
     changestartEndTime (val, value) {
@@ -308,7 +310,7 @@ export default {
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.conferenceData = res.data.content
-          this.conferenceTable = res.data.totalElements
+          this.dataTable = res.data.totalElements
         }
       })
     },

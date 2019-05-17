@@ -166,6 +166,16 @@ export default new Router({
           path: '/accountRecord/listAccRecords',
           name: '监理台账',
           component: () => import('@/view/workResult/accountRecord')
+        },
+        {
+          path: '/sideStation/listSideStation',
+          name: '旁站',
+          component: () => import('@/view/workProcess/sideStation')
+        },
+        {
+          path: '/checkAcceptance/listCheckAcceptance',
+          name: '检查验收',
+          component: () => import('@/view/workProcess/checkAcceptance')
         }
       ]
     }
