@@ -176,6 +176,11 @@ export default new Router({
           path: '/checkAcceptance/listCheckAcceptance',
           name: '检查验收',
           component: () => import('@/view/workProcess/checkAcceptance')
+        },
+        {
+          path: '/parallelTest/listParallelTest',
+          name: '平行检验',
+          component: () => import('@/view/workProcess/parallelTest')
         }
       ]
     }
