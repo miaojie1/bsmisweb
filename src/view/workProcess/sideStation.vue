@@ -64,7 +64,7 @@
                 <Input v-model="formData.problems" placeholder="解决问题" />
                 </FormItem>
                 <FormItem label="旁站日期" prop="sideStationDate">
-                <DatePicker v-model="formData.sideStationDate" type="date" placeholder="Select date" style="width: 200px"></DatePicker>
+                <DatePicker format="yyyy-MM-dd" v-model="formData.sideStationDate" type="date" placeholder="Select date" style="width: 200px"></DatePicker>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -85,6 +85,9 @@
                 </FormItem>
                 <FormItem label="解决问题" prop="problems">
                 <Input v-model="formData.problems" placeholder="解决问题" />
+                </FormItem>
+                <FormItem label="旁站日期" prop="sideStationDate">
+                <DatePicker format="yyyy-MM-dd" v-model="formData.sideStationDate" type="date" placeholder="Select date" style="width: 200px"></DatePicker>
                 </FormItem>
             </Form>
             <div slot="footer">
