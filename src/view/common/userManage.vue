@@ -24,7 +24,7 @@
       <template slot="action" slot-scope="{ row, index }">
         <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small" @click="remove(row, index)">删除</Button>
-        <Button type="primary" size="small" @click="showDetail(row, index)">详情</Button>
+        <!-- <Button type="primary" size="small" @click="showDetail(row, index)">详情</Button> -->
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -150,25 +150,25 @@
           <Input v-model="formData.mobile" placeholder="手机号码"/>
         </FormItem>
         <FormItem label="部门" prop="department">
-          <Select style="width:200px" v-model="formData.department">
-            <Option v-for="item in departmentItem" :value="item" :key="item.id" name="department">{{item.name }}
+          <Select style="width:200px" v-model="formData.department" :placeholder="deparmentStr" @on-change="changeDepartmentPosition(formData.department)">
+            <Option v-for="item in departmentItem" :value="item" :label="item.name" :key="item.id" name="department" :selected="index.indexOf(item.id) > -1">
             </Option>
           </Select>
         </FormItem>
         <FormItem label="员工职位" prop="departmentPosition">
-          <Select style="width:200px" v-model="formData.departmentPosition">
-            <Option v-for="item in departmentPositionItem" :value="item" :key="item.id" name="departmentPosition">{{item.name }}
+          <Select style="width:200px" v-model="formData.departmentPosition" :placeholder="departmentPositionStr">
+            <Option v-for="item in departmentPositionItem" :value="item" :label="item.name" :key="item.id" name="departmentPosition">{{item.name }}
             </Option>
           </Select>
         </FormItem>
         <FormItem label="角色" prop="roles">
-          <Select style="width:200px" v-model="formData.roles" multiple>
-            <Option v-for="item in rolesItem" :value="item" :key="item.id" name="roles">{{item.description }}
+          <Select style="width:200px" v-model="formData.roles" multiple :placeholder="roleStr">
+            <Option v-for="item in rolesItem" :label="item.name" :value="item" :key="item.id" name="roles">{{item.description }}
             </Option>
           </Select>
         </FormItem>
         <FormItem label="员工状态" prop="employeeStatus">
-          <Select style="width:200px" v-model="formData.employeeStatus">
+          <Select style="width:200px" v-model="formData.employeeStatus" :placeholder="employeeStatusStr">
             <Option v-for="item in employeeStatusItem" :value="item" :key="item.id" name="employeeStatus">{{item.name }}
             </Option>
           </Select>
@@ -214,37 +214,41 @@ export default {
       columns: [
         {
           title: 'ID',
-          key: 'id'
+          key: 'id',
+          width: 100
         },
         {
           title: '姓名',
-          key: 'name'
+          key: 'name',
+          width: 150
         },
         {
           title: '用户名',
           key: 'username',
-          width: 80
+          width: 150
         },
         {
           title: '密码',
           key: 'password',
-          width: 140
+          width: 150
         },
         {
           title: '性别',
-          key: 'sex'
+          key: 'sex',
+          width: 150
         },
         {
           title: '邮箱',
-          key: 'email'
+          key: 'email',
+          width: 150
         },
         {
           title: '手机号码',
           key: 'mobile',
-          width: 100
+          width: 150
         },
         {
-          title: '部门',
+          title: '所属部门',
           key: 'department',
           width: 100,
           render: (h, params) => {
@@ -253,8 +257,9 @@ export default {
           }
         },
         {
-          title: '职位',
+          title: '员工职位',
           key: 'departmentPosition',
+          width: 100,
           render: (h, params) => {
             return h('span', params.row.departmentPosition.name)
           }
@@ -262,6 +267,7 @@ export default {
         {
           title: '角色',
           key: 'roles',
+          width: 100,
           render: (h, params) => {
             const roles = params.row.roles
             let description = ''
@@ -272,16 +278,28 @@ export default {
           }
         },
         {
-          title: '状态',
+          title: '员工状态',
           key: 'employeeStatus',
+          width: 100,
           render: (h, params) => {
             return h('span', params.row.employeeStatus.name)
           }
         },
-        // {
-        //   title: '版本',
-        //   key: 'version'
-        // },
+        {
+          title: '创建日期',
+          key: 'createDate',
+          width: 150
+        },
+        {
+          title: '修改日期',
+          key: 'modificationDate',
+          width: 150
+        },
+        {
+          title: '版本',
+          key: 'version',
+          width: 100
+        },
         {
           title: '操作',
           slot: 'action',
@@ -290,21 +308,7 @@ export default {
         }
       ],
       employeeData: [],
-      formData: {
-        name: '',
-        username: '',
-        password: '',
-        sex: '',
-        entryDate: '',
-        termDate: '',
-        email: '',
-        mobile: '',
-        department: '',
-        departmentPosition: '',
-        roles: [],
-        employeeStatus: '',
-        version: 1
-      },
+      formData: {},
       ruleValidate: {
         username: [
           { required: true, message: '用户名不可以为空', trigger: 'blur' }
@@ -331,7 +335,15 @@ export default {
       pageSize: 5,
       employeeDataTotal: 0,
       // 查询条件
-      searchData: ''
+      searchData: '',
+      // 部门默认显示
+      deparmentStr: '',
+      // 职位默认显示
+      departmentPositionStr: '',
+      // 用户默认显示
+      roleStr: '',
+      // 员工状态默认显示
+      employeeStatusStr: ''
     }
   },
   created () {
@@ -353,6 +365,28 @@ export default {
     },
     edit (row, index) {
       this.formData = row
+      if (row.department !== null) {
+        this.deparmentStr = row.department.name
+      } else {
+        this.deparmentStr = '无'
+      }
+      if (row.departmentPosition !== null) {
+        this.departmentPositionStr = row.departmentPosition.name
+      } else {
+        this.departmentPositionStr = '无'
+      }
+      if (row.roles !== null) {
+        for (let i = 0; i < row.roles.length; i++) {
+          this.roleStr += row.roles[i].description
+        }
+      } else {
+        this.roleStr = '无'
+      }
+      if (row.employeeStatus !== null) {
+        this.employeeStatusStr = row.employeeStatus.name
+      } else {
+        this.employeeStatusStr = '无'
+      }
       this.showEditModal = true
     },
     getEmployeePage () {
@@ -452,6 +486,10 @@ export default {
           this.$Message.error('表单数据校验失败!')
         }
       })
+      this.deparmentStr = ''
+      this.departmentPositionStr = ''
+      this.roleStr = ''
+      this.employeeStatusStr = ''
     },
     cancelAdd (name) {
       this.$refs[name].resetFields()
@@ -478,7 +516,10 @@ export default {
     cancelEdit (name) {
       // this.$refs[name].resetFields()
       this.showEditModal = false
-      // this.$refs.employeeData.clearCurrentRow()
+      this.deparmentStr = ''
+      this.departmentPositionStr = ''
+      this.roleStr = ''
+      this.employeeStatusStr = ''
       this.$Message.info('您已取消编辑！')
     },
     // 删除用户
