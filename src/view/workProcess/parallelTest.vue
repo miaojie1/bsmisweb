@@ -60,11 +60,6 @@
                 <FormItem label="简要内容" prop="brief">
                 <Input v-model="formData.brief" placeholder="简要内容" />
                 </FormItem>
-                <FormItem label="检查人员" prop="sponsor">
-                <Select v-model="formData.sponsor">
-                    <Option v-for="item in employeeList" :value="item" :key="item.id" :label="item.name"></Option>
-                </Select>
-                </FormItem>
                 <FormItem label="平行验收日期" prop="testDate">
                 <DatePicker v-model="formData.testDate" type="date" placeholder="Select date" style="width: 200px"></DatePicker>
                 </FormItem>
@@ -133,7 +128,6 @@ export default {
     return {
       currentStatus: '',
       projectList: [],
-      employeeList: [],
       checkStatusList: [],
       currentRowId: '',
       currentEmplId: 0,
@@ -142,7 +136,7 @@ export default {
       showEditModal: false,
       showDeleteModal: false,
       showCheckStatusModal: false,
-      currentRank: '',
+      currentRank: 0,
       // 分页
       pageSize: 5,
       pageNo: 0,
@@ -153,6 +147,10 @@ export default {
       parallelTestData: [],
       // 表单暂存（增加修改时用）
       formData: {},
+      editData: {
+        part: '',
+        brief: ''
+      },
       columns: [
         {
           title: 'ID',
@@ -245,7 +243,6 @@ export default {
   },
   created () {
     this.getProjectsList()
-    this.getEmployeeList()
     this.getParallelTestDataList()
     const departmentPosition = JSON.parse(localStorage.getItem('currentUser')).departmentPosition
     this.currentRank = departmentPosition.rank
@@ -257,7 +254,7 @@ export default {
       this.showAddModal = true
     },
     confirmAdd (name, isSubmit) {
-      if (this.formData.testDate === undefined || this.formData.project === undefined || this.formData.project === null || this.formData.sponsor === undefined || this.formData.sponsor === null) {
+      if (this.formData.testDate === undefined || this.formData.project === undefined || this.formData.project === null) {
         this.$Message.error('请填写未填项！')
       } else {
         this.formData.isSubmit = isSubmit
@@ -286,6 +283,8 @@ export default {
     edit (row, index) {
       this.formData = row
       this.showEditModal = true
+      this.editData.part = row.part
+      this.editData.brief = row.brief
     },
     confirmEdit (name, isSubmit) {
       if (this.formData.project === undefined || this.formData.project === null) {
@@ -313,6 +312,8 @@ export default {
     cancelEdit () {
       this.showEditModal = false
       this.$Message.info('您已取消修改！')
+      this.formData.part = this.editData.part
+      this.formData.brief = this.editData.brief
     },
     remove (row, index) {
       this.showDeleteModal = true
@@ -398,17 +399,6 @@ export default {
         if (res.status === 200) {
           this.parallelTestData = res.data.content
           this.dataTotal = res.data.totalElements
-        }
-      })
-    },
-    getEmployeeList () {
-      let data = {
-        access_token: localStorage.getItem('jwtToken')
-      }
-      let url = '/employee/listAllEmployees'
-      this.$http.post(url, data).then(res => {
-        if (res.status === 200) {
-          this.employeeList = res.data
         }
       })
     },

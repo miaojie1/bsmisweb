@@ -86,6 +86,11 @@
                 <FormItem label="解决问题" prop="problems">
                 <Input v-model="formData.problems" placeholder="解决问题" />
                 </FormItem>
+                <FormItem label="所属项目" prop="project">
+                <Select v-model="formData.project" :placeholder="currentProject">
+                    <Option v-for="item in projectList" :value="item" :key="item.id" :label="item.name"></Option>
+                </Select>
+                </FormItem>
                 <FormItem label="旁站日期" prop="sideStationDate">
                 <DatePicker format="yyyy-MM-dd" v-model="formData.sideStationDate" type="date" placeholder="Select date" style="width: 200px"></DatePicker>
                 </FormItem>
@@ -135,6 +140,7 @@
 export default {
   data () {
     return {
+      currentProject: '',
       currentStatus: '',
       projectList: [],
       checkStatusList: [],
@@ -156,6 +162,13 @@ export default {
       sideStationData: [],
       // 表单暂存（增加修改时用）
       formData: {},
+      editData: {
+        part: '',
+        brief: '',
+        problems: '',
+        project: {},
+        sideStationDate: ''
+      },
       columns: [
         {
           title: 'ID',
@@ -299,6 +312,14 @@ export default {
     edit (row, index) {
       this.formData = row
       this.showEditModal = true
+      this.formData.project = row.project
+      this.currentProject = row.project.name
+
+      this.editData.part = row.part
+      this.editData.brief = row.brief
+      this.editData.problems = row.problems
+      this.editData.project = row.project
+      this.editData.sideStationDate = row.sideStationDate
     },
     confirmEdit (name, isSubmit) {
       if (this.formData.project === undefined || this.formData.project === null) {
@@ -326,6 +347,11 @@ export default {
     cancelEdit () {
       this.showEditModal = false
       this.$Message.info('您已取消修改！')
+      this.formData.part = this.editData.part
+      this.formData.brief = this.editData.brief
+      this.formData.problems = this.editData.problems
+      this.formData.project = this.editData.project
+      this.formData.sideStationDate = this.editData.sideStationDate
     },
     remove (row, index) {
       this.showDeleteModal = true
