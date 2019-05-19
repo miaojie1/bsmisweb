@@ -77,7 +77,15 @@ export default {
         {
           title: '日期',
           key: 'date',
-          width: 130
+          width: 130,
+          render: (h, params) => {
+            const date = params.row.date
+            if (date === null || date === '') {
+              return h('span', '')
+            } else {
+              return h('span', date.substring(0, 10))
+            }
+          }
         },
         {
           title: '监理工程师',
@@ -89,7 +97,11 @@ export default {
         },
         {
           title: '职位',
-          key: 'position'
+          key: 'position',
+          render: (h, params) => {
+            const position = params.row.position
+            return h('span', position.name)
+          }
         },
         {
           title: '操作',
