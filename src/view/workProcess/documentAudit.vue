@@ -14,18 +14,25 @@
       highlight-row
       :columns="columns"
       :data="docAuditData"
-      style="margin-top: 15px"
-      size="small">
+      style="margin-top: 15px">
       <template slot-scope="{ row }" slot="name">
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
         <Button type="warning" size="small" @click="downLoadDoc(row, index)">下载文档</Button>
-        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)"
+        <Button type="primary" size="small" style="margin-right: 1px;" @click="edit(row, index)"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)">编辑</Button>
-        <Button type="error" size="small" style="margin-right: 1px" @click="remove(row, index)"
+        <Button type="error" size="small" style="margin-right: 1px;" @click="remove(row, index)"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)">删除</Button>
         <Button type="success" size="small" @click="edit(row, index)">流程图</Button>
+        <Button type="success" size="small"
+          style="margin-right: 1px;"
+          @click="allotEmpl(row, index)"
+          v-show="showSetCheck(row)">审核人</Button>
+        <Button type="primary" size="small"
+          style="margin-right: 1px;"
+          v-show="showCheck(row)"
+          @click="check(row)">审核</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -84,7 +91,7 @@
       v-model="showEditModal"
       title="修改文件审核">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
-                <FormItem label="标题" prop="title">
+        <FormItem label="标题" prop="title">
           <Input v-model="formData.title" placeholder="标题" />
         </FormItem>
         <FormItem label="所属项目" prop="project">
@@ -133,6 +140,67 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showSetEmplModal"
+      title="设置审核人">
+      <Form ref="formData" :model="formData" :label-width="100">
+        <FormItem label="审核人" prop="project">
+          <Select v-model="formData.employees" multiple>
+            <Option v-for="item in employeeList" :value="item" :key="item.id" :label="item.username"></Option>
+          </Select>
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmSet('formData')">提交</Button>
+        <Button @click="cancelSet('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
+      v-model="showCheckResultModal"
+      title="审核">
+      <Form ref="formData" :model="formData" :rule="checkValidate" :label-width="100">
+        <FormItem label="审核结果" prop="result">
+          <Select v-model="checkResult">
+            <Option value=true>通过</Option>
+            <Option value=false>不通过</Option>
+          </Select>
+        </FormItem>
+        <FormItem label="审核意见" prop="message">
+          <Input v-model="checkMsg" placeholder="审核意见" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmCheck('formData', 0)">提交</Button>
+        <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
+      v-model="showMajorCheckModal"
+      title="总监审核">
+      <Table
+      border
+      highlight-row
+      :columns="auditColumns"
+      :data="employeeAuditData"
+      style="margin-top: 15px"
+      size="small">
+      </Table>
+      <Form ref="formData" :model="formData" :rule="checkValidate" :label-width="100" style="margin-top: 10px">
+        <FormItem label="审核结果" prop="result">
+          <Select v-model="checkResult">
+            <Option value=true>通过</Option>
+            <Option value=false>不通过</Option>
+          </Select>
+        </FormItem>
+        <FormItem label="审核意见" prop="message">
+          <Input v-model="checkMsg" placeholder="审核意见" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmCheck('formData', 1)">提交</Button>
+        <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -144,7 +212,7 @@ export default {
         {
           title: 'Id',
           key: 'id',
-          width: 50
+          width: 80
         },
         {
           title: '标题',
@@ -196,6 +264,11 @@ export default {
           }
         },
         {
+          title: '审核状态',
+          key: 'auditStatus',
+          width: 100
+        },
+        {
           title: '文件名称',
           key: 'document',
           width: 130,
@@ -232,14 +305,45 @@ export default {
         {
           title: '操作',
           slot: 'action',
-          width: 250,
+          width: 300,
           fixed: 'right'
         }
       ],
+      auditColumns: [
+        {
+          title: '审核人',
+          key: 'employee',
+          render: (h, params) => {
+            const employee = params.row.employee
+            return h('span', employee.username)
+          }
+        },
+        {
+          title: '审核结果',
+          key: 'approved',
+          render: (h, params) => {
+            const approved = params.row.approved
+            if (approved === true) {
+              return h('span', '通过')
+            } else if (approved === false) {
+              return h('span', '拒绝')
+            } else {
+              return h('span', '暂无')
+            }
+          }
+        },
+        {
+          title: '审核意见',
+          key: 'auditOpinion'
+        }
+      ],
       docAuditData: [],
+      // 总监审核时用于保存 审核人的审核结果 意见
+      employeeAuditData: [],
       projectList: [],
       folderList: [],
       categoryList: [],
+      employeeList: [],
       pageNo: 0,
       pageSize: 5,
       docAuditDataTotal: 0,
@@ -250,9 +354,20 @@ export default {
           required: true, message: '不可以为空', trigger: 'blur'
         }]
       },
+      checkValidate: {
+        message: [{
+          required: true, message: '不可以为空', trigger: 'blur'
+        }]
+      },
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
+      // 设置审核弹框
+      showCheckResultModal: false,
+      // 设置审核人弹框
+      showSetEmplModal: false,
+      // 总监审核弹框
+      showMajorCheckModal: false,
       currentRowId: '',
       actionUrl: '',
       currentRank: 0,
@@ -268,16 +383,18 @@ export default {
       // 用于修改时下拉框的 默认显示问题
       currentProjectName: '',
       currentRowFolder: '',
-      currentRowCategory: ''
+      currentRowCategory: '',
+      // 审核意见
+      checkResult: true,
+      checkMsg: '',
+      taskId: ''
     }
   },
   created () {
     this.getDocumentAudits()
-    debugger
     const departmentPosition = JSON.parse(localStorage.getItem('currentUser')).departmentPosition
     this.currentEmplId = JSON.parse(localStorage.getItem('currentUser')).id
     this.currentRank = departmentPosition.rank
-    debugger
   },
   methods: {
     getDocumentAudits () {
@@ -328,6 +445,17 @@ export default {
         }
       })
     },
+    getEmployeeList () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/documentAudit/listAllEmployees'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.employeeList = res.data
+        }
+      })
+    },
     add () {
       this.formData = {}
       this.actionUrl = 'http://127.0.0.1:8082/supervision/document/uploadDocument?access_token=' + localStorage.getItem('jwtToken')
@@ -336,13 +464,40 @@ export default {
       this.getFolderList()
       this.getCategoryList()
     },
+    // 显示审核弹框
+    check (row) {
+      this.formData = row
+      let manager = row.project.manager
+      if (manager.id === this.currentEmplId) {
+        this.employeeAuditData = row.employeeAuditList
+        this.showMajorCheckModal = true
+      } else {
+        this.showCheckResultModal = true
+      }
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+    },
     confirmAdd (name, isSubmit) {
+      let that = this
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.formData.isSubmit = isSubmit
+          that.formData.isSubmit = isSubmit
+          debugger
+          if (that.checkResult !== that && this.checkMsg !== '') {
+            let i = 0
+            let currentEmplAudit = JSON.parse(localStorage.getItem('currentEmplAudit'))
+            for (i = 0; i < that.formData.employeeAuditList.length; i++) {
+              if (that.formData.employeeAuditList[i].id === currentEmplAudit.id) {
+                debugger
+                that.formData.employeeAuditList[i].approved = that.checkResult
+                that.formData.employeeAuditList[i].auditOpinion = that.checkMsg
+              }
+            }
+          }
           let url = '/documentAudit/saveDocumentAudit?access_token=' + localStorage.getItem('jwtToken') + '&documentId=' + this.documentId + '&categoryId=' + this.categoryId + '&folderId=' + this.folderId
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false
+            this.showCheckResultModal = false
             if (res.data.status === true) {
               this.getDocumentAudits()
               this.$refs.formData.resetFields()
@@ -359,12 +514,47 @@ export default {
         this.categoryId = ''
         this.folderId = ''
         this.documentId = ''
+        this.checkResult = null
+        this.checkMsg = ''
       })
     },
     cancelAdd () {
       this.showAddModal = false
+      this.showCheckResultModal = false
       this.$refs.formData.resetFields()
       this.$Message.info('您已取消增加！')
+    },
+    // 提交审核结果
+    confirmCheck (name, type) {
+      let url = '/documentAudit/allotUserAudit'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        documentAuditId: this.currentRowId,
+        taskId: this.taskId,
+        approved: this.checkResult,
+        auditOpinion: this.checkMsg,
+        auditType: type
+      }
+      this.$http.post(url, data).then(res => {
+        this.showCheckResultModal = false
+        this.showMajorCheckModal = false
+        if (res.data.status === true) {
+          this.getDocumentAudits()
+          this.$Message.success(res.data.message)
+        } else {
+          this.$Message.error(res.data.message)
+        }
+      })
+      this.checkResult = ''
+      this.checkMsg = ''
+    },
+    // 取消提交审核
+    cancelCheck () {
+      this.showCheckResultModal = false
+      this.showMajorCheckModal = false
+      this.$Message.info('您已取消审核')
+      this.checkResult = ''
+      this.checkMsg = ''
     },
     edit (row, index) {
       this.formData = row
@@ -403,6 +593,47 @@ export default {
       this.showEditModal = false
       this.$Message.info('您已取消修改！')
     },
+    // 判断是否显示 审核 按钮，以及“总监审核”按钮
+    showCheck (row) {
+      if (row.needAudit) {
+        return true
+      }
+    },
+    // 判断是否显示 审核人 按钮
+    showSetCheck (row) {
+      if (row.needAllot) {
+        return true
+      }
+    },
+    // 提交 设置审核人
+    confirmSet (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          let url = '/documentAudit/allotAuditTask?access_token=' + localStorage.getItem('jwtToken') + '&documentAuditId=' + this.currentRowId
+          let data = []
+          this.formData.employees.forEach(element => {
+            data.push(element)
+          })
+          this.$http.postForm(url, JSON.stringify(data)).then(res => {
+            this.showSetEmplModal = false
+            if (res.data.status === true) {
+              this.getDocumentAudits()
+              this.$refs.formData.resetFields()
+              this.$Message.success(res.data.message)
+            } else {
+              this.$refs.formData.resetFields()
+              this.$Message.error(res.data.message)
+            }
+          })
+        } else {
+          this.$Message.error('表单数据校验失败!')
+        }
+      })
+    },
+    cancelSet () {
+      this.showSetEmplModal = false
+      this.$Message.info('您已取消设置审核人！')
+    },
     remove (row, index) {
       this.currentRowId = row.id
       this.documentId = row.document.id
@@ -431,6 +662,11 @@ export default {
       this.pageNo = 0
       this.getDocumentAudits()
     },
+    allotEmpl (row, index) {
+      this.showSetEmplModal = true
+      this.currentRowId = row.id
+      this.getEmployeeList()
+    },
     downLoadDoc (row, index) {
       let fileName = row.document.documentName
       // 由于是ajax调用下载方法，下载数据不会直接下载到本地，所以再创建一个a标签，给它一个 download 属性（HTML5新属性）
@@ -456,7 +692,6 @@ export default {
       this.pageSize = pageSize
     },
     onFileSuccess (response, file, fileList) {
-      debugger
       this.documentId = response
     },
     removeAttachment () {

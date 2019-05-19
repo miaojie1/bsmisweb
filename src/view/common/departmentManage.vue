@@ -255,7 +255,6 @@ export default {
     confirmAdd (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          console.log(this.formData)
           let url = '/department/saveOrUpdate?access_token=' + localStorage.getItem('jwtToken')
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showAddModal = false

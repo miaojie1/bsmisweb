@@ -186,23 +186,23 @@ export default {
             }
           }
         },
-        {
-          title: '按钮',
-          key: 'operation',
-          width: 100,
-          render: (h, params) => {
-            const opeval = params.row.operation
-            let btns = ''
-            if (opeval === '') {
-              return h('span', '无')
-            } else {
-              opeval.forEach(element => {
-                btns = btns + element.buttonId + '; '
-              })
-              return h('span', btns)
-            }
-          }
-        },
+        // {
+        //   title: '按钮',
+        //   key: 'operation',
+        //   width: 100,
+        //   render: (h, params) => {
+        //     const opeval = params.row.operation
+        //     let btns = ''
+        //     if (opeval === '') {
+        //       return h('span', '无')
+        //     } else {
+        //       opeval.forEach(element => {
+        //         btns = btns + element.buttonId + '; '
+        //       })
+        //       return h('span', btns)
+        //     }
+        //   }
+        // },
         {
           title: '状态',
           key: 'status',
@@ -243,15 +243,15 @@ export default {
         {
           title: '父菜单',
           key: 'parentMenuId',
-          width: 100
-          // render: (h, params) => {
-          //   const superDep = params.row.superiorDepartment
-          //   if (superDep === null || superDep === '') {
-          //     return h('span', '无')
-          //   } else {
-          //     return h('span', superDep.name)
-          //   }
-          // }
+          width: 100,
+          render: (h, params) => {
+            const parentMenuId = params.row.parentMenuId
+            if (parentMenuId === null || parentMenuId === '') {
+              return h('span', '无')
+            } else {
+              return h('span', this.transParentMenu(parentMenuId))
+            }
+          }
         },
         {
           title: '版本',
@@ -303,6 +303,7 @@ export default {
   created () {
     this.buttonList = JSON.parse(localStorage.getItem('operation'))
     this.getMenuPage()
+    this.getMenuList()
   },
   methods: {
     /**
@@ -414,6 +415,14 @@ export default {
           this.allMenuData = res.data
         }
       })
+    },
+    transParentMenu (parentId) {
+      let i = 0
+      for (i = 0; i < this.allMenuData.length; i++) {
+        if (this.allMenuData[i].id === parentId) {
+          return this.allMenuData[i].name
+        }
+      }
     },
     changeStatus (status) {
       this.formData.status = status

@@ -156,23 +156,23 @@ export default {
             }
           }
         },
-        {
-          title: '按钮',
-          key: 'operations',
-          width: 210,
-          render: (h, params) => {
-            const opeval = params.row.operations
-            let btns = ''
-            if (opeval === '') {
-              return h('span', '无')
-            } else {
-              opeval.forEach(element => {
-                btns = btns + element.buttonId + '; '
-              })
-              return h('span', btns)
-            }
-          }
-        },
+        // {
+        //   title: '按钮',
+        //   key: 'operations',
+        //   width: 210,
+        //   render: (h, params) => {
+        //     const opeval = params.row.operations
+        //     let btns = ''
+        //     if (opeval === '') {
+        //       return h('span', '无')
+        //     } else {
+        //       opeval.forEach(element => {
+        //         btns = btns + element.buttonId + '; '
+        //       })
+        //       return h('span', btns)
+        //     }
+        //   }
+        // },
         {
           title: '版本',
           key: 'version',
