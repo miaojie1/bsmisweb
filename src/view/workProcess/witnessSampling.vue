@@ -26,6 +26,10 @@
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.creator.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="primary" size="small"
+          style="margin-right: 1px;"
+          v-show="showCheck(row)"
+          @click="check(row)">审核</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -47,6 +51,11 @@
       v-model="showAddModal"
       title="新增 见证取样">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
+        <FormItem label="所属项目" prop="project">
+          <Select v-model="formData.project">
+            <Option v-for="item in projectList" :value="item" :key="item.id" :label="item.name"></Option>
+          </Select>
+        </FormItem>
         <FormItem label="取样名称" prop="samplingName">
           <Input v-model="formData.samplingName" placeholder="取样名称" />
         </FormItem>
@@ -73,6 +82,11 @@
       v-model="showEditModal"
       title="编辑 见证取样">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
+        <FormItem label="所属项目" prop="project">
+          <Select v-model="formData.project" :placeholder="currentProjectName">
+            <Option v-for="item in projectList" :value="item" :key="item.id" :label="item.name"></Option>
+          </Select>
+        </FormItem>
         <FormItem label="取样名称" prop="samplingName">
           <Input v-model="formData.samplingName" placeholder="取样名称" />
         </FormItem>
@@ -111,6 +125,25 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckResultModal"
+      title="审核">
+      <Form ref="formData" :model="formData" :label-width="100">
+        <FormItem label="审核结果" prop="result">
+          <Select v-model="checkResult">
+            <Option value=true>通过</Option>
+            <Option value=false>不通过</Option>
+          </Select>
+        </FormItem>
+        <FormItem label="审核意见" prop="message">
+          <Input v-model="checkMsg" placeholder="审核意见" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmCheck('formData')">提交</Button>
+        <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -119,6 +152,7 @@ export default {
   data () {
     return {
       witnessSamplingData: [],
+      projectList: [],
       pageSize: 5,
       pageNo: 0,
       dataTotal: 0,
@@ -128,6 +162,15 @@ export default {
           title: 'ID',
           key: 'id',
           width: 50
+        },
+        {
+          title: '所属项目',
+          key: 'project',
+          width: 100,
+          render: (h, params) => {
+            const project = params.row.project
+            return h('span', project.name)
+          }
         },
         {
           title: '取样名称',
@@ -182,6 +225,11 @@ export default {
           title: '规格',
           key: 'standard',
           width: 50
+        },
+        {
+          title: '审核状态',
+          key: 'auditStatus',
+          width: 100
         },
         {
           title: '创建时间',
@@ -250,8 +298,14 @@ export default {
       showDeleteModal: false,
       showAddModal: false,
       showEditModal: false,
+      showCheckResultModal: false,
+      currentProjectName: '',
       currentRank: 0,
       currentEmplId: 0,
+      currentRowId: '',
+      taskId: '',
+      checkResult: '',
+      checkMsg: '',
       currentEmpl: {}
     }
   },
@@ -292,6 +346,17 @@ export default {
         }
       })
     },
+    getProjectList () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/witnessSampling/listAllProjects'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.projectList = res.data
+        }
+      })
+    },
     remove (row, index) {
       this.currentRowId = row.id
       this.showDeleteModal = true
@@ -313,46 +378,54 @@ export default {
       })
     },
     confirmAdd (name, isSubmit) {
-      this.formData.isSubmit = isSubmit
-      this.$refs[name].validate((valid) => {
-        if (valid) {
-          let url = '/witnessSampling/saveWitnessSampling?access_token=' + localStorage.getItem('jwtToken')
-          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
-            this.showAddModal = false
-            if (res.data.status === true) {
-              this.getWitnessSamplingDataList()
-              this.$Message.success(res.data.message)
-              this.$refs[name].resetFields()
-            } else {
-              this.$refs[name].resetFields()
-              this.$Message.error(res.data.message)
-            }
-          })
-        } else {
-          this.$Message.error('表单数据校验失败!')
-        }
-      })
+      if (this.formData.project === undefined || this.formData.project === null) {
+        this.$Message.error('请选择所属项目！')
+      } else {
+        this.formData.isSubmit = isSubmit
+        this.$refs[name].validate((valid) => {
+          if (valid) {
+            let url = '/witnessSampling/saveWitnessSampling?access_token=' + localStorage.getItem('jwtToken')
+            this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
+              this.showAddModal = false
+              if (res.data.status === true) {
+                this.getWitnessSamplingDataList()
+                this.$Message.success(res.data.message)
+                this.$refs[name].resetFields()
+              } else {
+                this.$refs[name].resetFields()
+                this.$Message.error(res.data.message)
+              }
+            })
+          } else {
+            this.$Message.error('表单数据校验失败!')
+          }
+        })
+      }
     },
     confirmEdit (name, isSubmit) {
-      this.$refs[name].validate((valid) => {
-        this.formData.isSubmit = isSubmit
-        if (valid) {
-          let url = '/witnessSampling/saveWitnessSampling?access_token=' + localStorage.getItem('jwtToken')
-          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
-            this.showEditModal = false
-            if (res.data.status === true) {
-              this.getWitnessSamplingDataList()
-              this.$Message.success(res.data.message)
-              this.$refs[name].resetFields()
-            } else {
-              this.$refs[name].resetFields()
-              this.$Message.error(res.data.message)
-            }
-          })
-        } else {
-          this.$Message.error('表单数据校验失败!')
-        }
-      })
+      if (this.formData.project === undefined || this.formData.project === null) {
+        this.$Message.error('请选择所属项目！')
+      } else {
+        this.$refs[name].validate((valid) => {
+          this.formData.isSubmit = isSubmit
+          if (valid) {
+            let url = '/witnessSampling/saveWitnessSampling?access_token=' + localStorage.getItem('jwtToken')
+            this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
+              this.showEditModal = false
+              if (res.data.status === true) {
+                this.getWitnessSamplingDataList()
+                this.$Message.success(res.data.message)
+                this.$refs[name].resetFields()
+              } else {
+                this.$refs[name].resetFields()
+                this.$Message.error(res.data.message)
+              }
+            })
+          } else {
+            this.$Message.error('表单数据校验失败!')
+          }
+        })
+      }
     },
     cancelAdd () {
       this.showAddModal = false
@@ -368,6 +441,47 @@ export default {
       this.showDeleteModal = false
       this.currentRowId = ''
       this.$Message.info('您已取消删除！')
+    },
+    // 判断是否显示 审核 按钮，以及“总监审核”按钮
+    showCheck (row) {
+      if (row.needAudit) {
+        return true
+      }
+    },
+    // 弹出审核弹框
+    check (row) {
+      this.showCheckResultModal = true
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+    },
+    // 提交审核结果
+    confirmCheck (name) {
+      let url = '/witnessSampling/checkWitnessSampling'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        witnessSamplingId: this.currentRowId,
+        taskId: this.taskId,
+        approved: this.checkResult,
+        auditOpinion: this.checkMsg
+      }
+      this.$http.post(url, data).then(res => {
+        this.showCheckResultModal = false
+        if (res.data.status === true) {
+          this.getWitnessSamplingDataList()
+          this.$Message.success(res.data.message)
+        } else {
+          this.$Message.error(res.data.message)
+        }
+      })
+      this.checkResult = ''
+      this.checkMsg = ''
+    },
+    // 取消提交审核
+    cancelCheck () {
+      this.showCheckResultModal = false
+      this.$Message.info('您已取消审核')
+      this.checkResult = ''
+      this.checkMsg = ''
     },
     showFlows (row, index) {
     },

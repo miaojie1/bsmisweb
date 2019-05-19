@@ -26,6 +26,10 @@
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.inspector.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="primary" size="small"
+          style="margin-right: 1px;"
+          v-show="showCheck(row)"
+          @click="check(row)">审核</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -118,6 +122,25 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckResultModal"
+      title="审核">
+      <Form ref="formData" :model="formData" :label-width="100">
+        <FormItem label="审核结果" prop="result">
+          <Select v-model="checkResult">
+            <Option value=true>通过</Option>
+            <Option value=false>不通过</Option>
+          </Select>
+        </FormItem>
+        <FormItem label="审核意见" prop="message">
+          <Input v-model="checkMsg" placeholder="审核意见" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmCheck('formData')">提交</Button>
+        <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -199,6 +222,11 @@ export default {
           }
         },
         {
+          title: '审核状态',
+          key: 'auditStatus',
+          width: 100
+        },
+        {
           title: '创建时间',
           key: 'createDate',
           width: 100,
@@ -259,9 +287,14 @@ export default {
       showDeleteModal: false,
       showAddModal: false,
       showEditModal: false,
+      showCheckResultModal: false,
       currentProjectName: '',
       currentRank: 0,
       currentEmplId: 0,
+      currentRowId: '',
+      taskId: '',
+      checkResult: '',
+      checkMsg: '',
       currentEmpl: {}
     }
   },
@@ -400,6 +433,47 @@ export default {
       this.currentRowId = ''
       this.$Message.info('您已取消删除！')
     },
+    // 判断是否显示 审核 按钮，以及“总监审核”按钮
+    showCheck (row) {
+      if (row.needAudit) {
+        return true
+      }
+    },
+    // 弹出审核弹框
+    check (row) {
+      this.showCheckResultModal = true
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+    },
+    // 提交审核结果
+    confirmCheck (name) {
+      let url = '/patrol/checkPatrol'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        patrolId: this.currentRowId,
+        taskId: this.taskId,
+        approved: this.checkResult,
+        auditOpinion: this.checkMsg
+      }
+      this.$http.post(url, data).then(res => {
+        this.showCheckResultModal = false
+        if (res.data.status === true) {
+          this.getPatrolDataList()
+          this.$Message.success(res.data.message)
+        } else {
+          this.$Message.error(res.data.message)
+        }
+      })
+      this.checkResult = ''
+      this.checkMsg = ''
+    },
+    // 取消提交审核
+    cancelCheck () {
+      this.showCheckResultModal = false
+      this.$Message.info('您已取消审核')
+      this.checkResult = ''
+      this.checkMsg = ''
+    },
     showFlows (row, index) {
     },
     // 分页
@@ -415,7 +489,7 @@ export default {
       this.getPatrolDataList()
     },
     pageSize: function () {
-      this.getsPatrolDataList()
+      this.getPatrolDataList()
     },
     selectedName: function () {
       this.getPatrolDataList()
