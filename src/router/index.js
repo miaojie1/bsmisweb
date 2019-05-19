@@ -181,6 +181,21 @@ export default new Router({
           path: '/parallelTest/listParallelTest',
           name: '平行检验',
           component: () => import('@/view/workProcess/parallelTest')
+        },
+        {
+          path: '/studyAndTest/listStudyAndTest',
+          name: '学习考试',
+          component: () => import('@/view/workResult/studyAndTest')
+        },
+        {
+          path: '/studyMaterial/listStudyMaterial',
+          name: '学习资料',
+          component: () => import('@/view/workResult/studyMaterial')
+        },
+        {
+          path: '/testPaper/listTestPaper',
+          name: '考卷',
+          component: () => import('@/view/workResult/testPaper')
         }
       ]
     }
