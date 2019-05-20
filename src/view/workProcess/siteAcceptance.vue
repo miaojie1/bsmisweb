@@ -25,7 +25,7 @@
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
-        <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="success" size="small" v-show="row.processId !== null || row.processId !== ''" @click="showFlows(row,index)">流程图</Button>
         <Button type="primary" size="small"
           style="margin-right: 1px;"
           v-show="showCheck(row)"
@@ -137,6 +137,12 @@
         <Button type="primary" @click="confirmCheck('formData')">提交</Button>
         <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
       </div>
+    </Modal>
+    <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
     </Modal>
   </div>
 </template>
@@ -274,13 +280,15 @@ export default {
       showEditModal: false,
       // 审核弹框
       showCheckResultModal: false,
+      showCheckImgModal: false,
       currentProjectName: '',
       currentRank: 0,
       currentEmplId: 0,
       currentRowId: '',
       taskId: '',
       checkResult: '',
-      checkMsg: ''
+      checkMsg: '',
+      img: ''
     }
   },
   created: function () {
@@ -430,6 +438,12 @@ export default {
       this.$Message.info('您已取消删除！')
     },
     showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     // 判断是否显示 审核 按钮，以及“总监审核”按钮
     showCheck (row) {
