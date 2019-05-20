@@ -6,7 +6,7 @@
       </i-col>
       <i-col span="5">
         <Select style="width:200px" v-model="searchTestPaperCategory"  @change="changeCategory($event)">
-          <Option v-for="(item,index) in testPaperCategoryItem" :value="item.id" :key="index">{{item.name}}
+          <Option v-for="(item,index) in testPaperCategoryItem" :value="item.id" :key="index">{{item.description}}
           </Option>
         </Select>
       </i-col>
@@ -79,9 +79,12 @@
         <FormItem label="备注" prop="remark">
           <Input v-model="formData.remark" placeholder="备注" />
         </FormItem>
+        <FormItem label="试卷总分" prop="fullScore">
+          <Input v-model="formData.fullScore" type="number" placeholder="试卷总分" />
+        </FormItem>
         <FormItem label="试卷类别" prop="testPaperCategory">
           <Select style="width:200px" v-model="formData.testPaperCategory" :placeholder="currentTestPaperCategoryName">
-            <Option v-for="item in testPaperCategoryItem" :value="item" :key="item.id" name="testPaperCategory">{{item.name }}
+            <Option v-for="item in testPaperCategoryItem" :value="item" :key="item.id" name="testPaperCategory">{{item.description}}
             </Option>
           </Select>
         </FormItem>
@@ -108,9 +111,12 @@
         <FormItem label="备注" prop="remark">
           <Input v-model="formData.remark" placeholder="备注" />
         </FormItem>
+        <FormItem label="试卷总分" prop="fullScore">
+          <Input v-model="formData.fullScore" type="number" placeholder="试卷总分" />
+        </FormItem>
         <FormItem label="试卷类别" prop="testPaperCategory">
           <Select style="width:200px" v-model="formData.testPaperCategory">
-            <Option v-for="item in testPaperCategoryItem" :value="item" :key="item.id" name="testPaperCategory">{{item.name }}
+            <Option v-for="item in testPaperCategoryItem" :value="item" :key="item.id" name="testPaperCategory">{{item.description}}
             </Option>
           </Select>
         </FormItem>
@@ -145,7 +151,7 @@ export default {
           width: 160
         },
         {
-          title: '试卷满分',
+          title: '试卷总分',
           key: 'fullScore',
           width: 100
         },
@@ -168,7 +174,7 @@ export default {
           width: 121,
           render: (h, params) => {
             const row = params.row
-            return h('span', row.testPaperCategory.name)
+            return h('span', row.testPaperCategory.description)
           }
         },
         {
@@ -228,11 +234,17 @@ export default {
         }
       })
     },
+    showTestPaperDetail (row, index) {
+      this.$router.push('/testPaperDetail/listTestPaperDetail' + row.id)
+    },
+    test (row, index) {
+      this.$router.push('/answerPaper/listAnswerPaper' + row.id)
+    },
     edit (row, index) {
       this.formData = row
       this.showEditModal = true
       if (row.testPaperCategory != null) {
-        this.currentTestPaperCategoryName = row.testPaperCategory.name
+        this.currentTestPaperCategoryName = row.testPaperCategory.description
       }
       if (row.department != null) {
         this.currentDepartmentName = row.department.name
