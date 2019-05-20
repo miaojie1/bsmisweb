@@ -6,7 +6,7 @@
       </i-col>
       <i-col span="5">
         <Select style="width:200px" v-model="searchStudyMaterialCategory"  @change="changeCategory($event)">
-          <Option v-for="(item,index) in studyMaterialCategoryItem" :value="item.id" :key="index">{{item.name}}
+          <Option v-for="(item,index) in studyMaterialCategoryItem" :value="item.id" :key="index">{{item.description}}
           </Option>
         </Select>
       </i-col>
@@ -95,7 +95,7 @@
         </FormItem>
         <FormItem label="学习资料类别" prop="studyMaterialCategory">
           <Select style="width:200px" v-model="formData.studyMaterialCategory" :placeholder="currentStudyMaterialCategoryName">
-            <Option v-for="item in studyMaterialCategoryItem" :value="item" :key="item.id" name="studyMaterialCategory">{{item.name }}
+            <Option v-for="item in studyMaterialCategoryItem" :value="item" :key="item.id" name="studyMaterialCategory">{{item.description}}
             </Option>
           </Select>
         </FormItem>
@@ -124,7 +124,7 @@
         </FormItem>
         <FormItem label="学习资料类别" prop="studyMaterialCategory">
           <Select style="width:200px" v-model="formData.studyMaterialCategory">
-            <Option v-for="item in studyMaterialCategoryItem" :value="item" :key="item.id" name="studyMaterialCategory">{{item.name }}
+            <Option v-for="item in studyMaterialCategoryItem" :value="item" :key="item.id" name="studyMaterialCategory">{{item.description}}
             </Option>
           </Select>
         </FormItem>
@@ -177,7 +177,7 @@ export default {
           width: 121,
           render: (h, params) => {
             const row = params.row
-            return h('span', row.studyMaterialCategory.name)
+            return h('span', row.studyMaterialCategory.description)
           }
         },
         {
@@ -290,7 +290,7 @@ export default {
       this.formData = row
       this.showEditModal = true
       if (row.studyMaterialCategory != null) {
-        this.currentStudyMaterialCategoryName = row.studyMaterialCategory.name
+        this.currentStudyMaterialCategoryName = row.studyMaterialCategory.description
       }
       if (row.department != null) {
         this.currentDepartmentName = row.department.name

@@ -196,6 +196,16 @@ export default new Router({
           path: '/testPaper/listTestPaper',
           name: '考卷',
           component: () => import('@/view/workResult/testPaper')
+        },
+        {
+          path: '/testPaperDetail/listTestPaperDetail:id',
+          name: '试题',
+          component: () => import('@/view/workResult/testPaperDetail')
+        },
+        {
+          path: '/answerPaper/listAnswerPaper:id',
+          name: '考试',
+          component: () => import('@/view/workResult/answerPaper')
         }
       ]
     }
