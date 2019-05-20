@@ -25,7 +25,7 @@
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
-        <Button type="success" size="small" v-show="row.processId !== null || row.processId !== ''" @click="showFlows(row,index)">流程图</Button>
+        <Button type="success" size="small" v-show="row.processId !== null" @click="showFlows(row,index)">流程图</Button>
         <Button type="primary" size="small"
           style="margin-right: 1px;"
           v-show="showCheck(row)"
@@ -398,12 +398,14 @@ export default {
       }
     },
     confirmEdit (name, isSubmit) {
+      debugger
       if (this.formData.project === undefined || this.formData.project === null) {
         this.$Message.error('请选择所属项目！')
       } else {
         this.$refs[name].validate((valid) => {
           this.formData.isSubmit = isSubmit
           if (valid) {
+            debugger
             let url = '/siteAcceptance/saveSiteAcceptance?access_token=' + localStorage.getItem('jwtToken')
             this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
               this.showEditModal = false
