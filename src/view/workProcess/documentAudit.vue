@@ -24,7 +24,7 @@
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)">编辑</Button>
         <Button type="error" size="small" style="margin-right: 1px;" @click="remove(row, index)"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)">删除</Button>
-        <Button type="success" size="small" @click="edit(row, index)">流程图</Button>
+        <Button type="success" size="small" v-show="row.processId !== null || row.processId !== ''" @click="showFlows(row, index)">流程图</Button>
         <Button type="success" size="small"
           style="margin-right: 1px;"
           @click="allotEmpl(row, index)"
@@ -201,6 +201,12 @@
         <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
+    </Modal>
   </div>
 </template>
 
@@ -368,6 +374,7 @@ export default {
       showSetEmplModal: false,
       // 总监审核弹框
       showMajorCheckModal: false,
+      showCheckImgModal: false,
       currentRowId: '',
       actionUrl: '',
       currentRank: 0,
@@ -387,7 +394,8 @@ export default {
       // 审核意见
       checkResult: true,
       checkMsg: '',
-      taskId: ''
+      taskId: '',
+      img: ''
     }
   },
   created () {
@@ -476,6 +484,14 @@ export default {
       }
       this.currentRowId = row.id
       this.taskId = row.taskId
+    },
+    showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     confirmAdd (name, isSubmit) {
       let that = this

@@ -56,9 +56,10 @@ export default{
       axios({
         method: 'GET',
         url: url,
-        // headers: {
-        //   'JWTToken': localStorage.getItem('jwtToken')
-        // },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        responseType: 'arraybuffer',
         params: params,
         baseURL: root,
         withCredentials: true
