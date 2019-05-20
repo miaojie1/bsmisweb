@@ -95,17 +95,17 @@
           <Input v-model="formData.title" placeholder="标题" />
         </FormItem>
         <FormItem label="所属项目" prop="project">
-          <Select v-model="formData.project" :placeholder="currentProjectName">
+          <Select v-model="selectProject" :placeholder="currentProjectName">
             <Option v-for="item in projectList" :value="item" :key="item.id" :label="item.name"></Option>
           </Select>
         </FormItem>
         <FormItem label="文件夹" prop="folder">
-          <Select v-model="folderId" :placeholder="currentRowFolder">
+          <Select v-model="selectFolder" :placeholder="currentRowFolder">
             <Option v-for="item in folderList" :value="item.id" :key="item.id" :label="item.name"></Option>
           </Select>
         </FormItem>
         <FormItem label="文件类型" prop="category">
-          <Select v-model="categoryId" :placeholder="currentRowCategory">
+          <Select v-model="selectCategory" :placeholder="currentRowCategory">
             <Option v-for="item in categoryList" :value="item.id" :key="item.id" :label="item.name"></Option>
           </Select>
         </FormItem>
@@ -391,6 +391,10 @@ export default {
       currentProjectName: '',
       currentRowFolder: '',
       currentRowCategory: '',
+      // 用于修改是对于下拉框选择的保存
+      selectProject: {},
+      selectFolder: '',
+      selectCategory: '',
       // 审核意见
       checkResult: true,
       checkMsg: '',
@@ -495,44 +499,33 @@ export default {
     },
     confirmAdd (name, isSubmit) {
       let that = this
-      this.$refs[name].validate((valid) => {
-        if (valid) {
-          that.formData.isSubmit = isSubmit
-          debugger
-          if (that.checkResult !== that && this.checkMsg !== '') {
-            let i = 0
-            let currentEmplAudit = JSON.parse(localStorage.getItem('currentEmplAudit'))
-            for (i = 0; i < that.formData.employeeAuditList.length; i++) {
-              if (that.formData.employeeAuditList[i].id === currentEmplAudit.id) {
-                debugger
-                that.formData.employeeAuditList[i].approved = that.checkResult
-                that.formData.employeeAuditList[i].auditOpinion = that.checkMsg
+      if (this.documentId === '') {
+        this.$Message.error('请上传所要审核的文件！')
+      } else {
+        this.$refs[name].validate((valid) => {
+          if (valid) {
+            that.formData.isSubmit = isSubmit
+            let url = '/documentAudit/saveDocumentAudit?access_token=' + localStorage.getItem('jwtToken') + '&documentId=' + this.documentId + '&categoryId=' + this.categoryId + '&folderId=' + this.folderId
+            this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
+              this.showAddModal = false
+              this.categoryId = ''
+              this.folderId = ''
+              this.documentId = ''
+              if (res.data.status === true) {
+                this.getDocumentAudits()
+                this.$refs.formData.resetFields()
+                this.$Message.success(res.data.message)
+              } else {
+                this.removeAttachment()
+                this.$refs.formData.resetFields()
+                this.$Message.error(res.data.message)
               }
-            }
+            })
+          } else {
+            this.$Message.error('表单数据校验失败!')
           }
-          let url = '/documentAudit/saveDocumentAudit?access_token=' + localStorage.getItem('jwtToken') + '&documentId=' + this.documentId + '&categoryId=' + this.categoryId + '&folderId=' + this.folderId
-          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
-            this.showAddModal = false
-            this.showCheckResultModal = false
-            if (res.data.status === true) {
-              this.getDocumentAudits()
-              this.$refs.formData.resetFields()
-              this.$Message.success(res.data.message)
-            } else {
-              this.removeAttachment()
-              this.$refs.formData.resetFields()
-              this.$Message.error(res.data.message)
-            }
-          })
-        } else {
-          this.$Message.error('表单数据校验失败!')
-        }
-        this.categoryId = ''
-        this.folderId = ''
-        this.documentId = ''
-        this.checkResult = null
-        this.checkMsg = ''
-      })
+        })
+      }
     },
     cancelAdd () {
       this.showAddModal = false
@@ -554,6 +547,8 @@ export default {
       this.$http.post(url, data).then(res => {
         this.showCheckResultModal = false
         this.showMajorCheckModal = false
+        this.checkResult = null
+        this.checkMsg = ''
         if (res.data.status === true) {
           this.getDocumentAudits()
           this.$Message.success(res.data.message)
@@ -561,8 +556,6 @@ export default {
           this.$Message.error(res.data.message)
         }
       })
-      this.checkResult = ''
-      this.checkMsg = ''
     },
     // 取消提交审核
     cancelCheck () {
@@ -573,6 +566,7 @@ export default {
       this.checkMsg = ''
     },
     edit (row, index) {
+      debugger
       this.formData = row
       this.currentProjectName = row.project.name
       const folder = row.document.documentFolder
@@ -587,10 +581,29 @@ export default {
     confirmEdit (name, isSubmit) {
       this.$refs[name].validate((valid) => {
         if (valid) {
+          debugger
           this.formData.isSubmit = isSubmit
+          if (this.selectProject.length > 0) {
+            this.formData.project = this.selectProject
+          }
+          if (this.selectCategory !== '') {
+            this.categoryId = this.selectCategory
+          } else {
+            let category = this.formData.document.documentCategory
+            this.categoryId = category.id
+          }
+          if (this.selectFolder !== '') {
+            this.folderId = this.selectFolder
+          } else {
+            let folder = this.formData.document.documentFolder
+            this.folderId = folder.id
+          }
           let url = '/documentAudit/saveDocumentAudit?access_token=' + localStorage.getItem('jwtToken') + '&documentId=' + this.documentId + '&categoryId=' + this.categoryId + '&folderId=' + this.folderId
           this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
             this.showEditModal = false
+            this.selectProject = {}
+            this.selectFolder = ''
+            this.selectCategory = ''
             if (res.data.status === true) {
               this.getDocumentAudits()
               this.$refs.formData.resetFields()
