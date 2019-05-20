@@ -25,7 +25,7 @@
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.inspector.id && row.isSubmit === 0)" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.inspector.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
-        <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="success" size="small" v-show="row.processId !== null || row.processId !== ''" @click="showFlows(row,index)">流程图</Button>
         <Button type="primary" size="small"
           style="margin-right: 1px;"
           v-show="showCheck(row)"
@@ -140,6 +140,12 @@
         <Button type="primary" @click="confirmCheck('formData')">提交</Button>
         <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
       </div>
+    </Modal>
+    <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
     </Modal>
   </div>
 </template>
@@ -288,6 +294,7 @@ export default {
       showAddModal: false,
       showEditModal: false,
       showCheckResultModal: false,
+      showCheckImgModal: false,
       currentProjectName: '',
       currentRank: 0,
       currentEmplId: 0,
@@ -295,7 +302,8 @@ export default {
       taskId: '',
       checkResult: '',
       checkMsg: '',
-      currentEmpl: {}
+      currentEmpl: {},
+      img: ''
     }
   },
   created: function () {
@@ -475,6 +483,12 @@ export default {
       this.checkMsg = ''
     },
     showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     // 分页
     changePageNo (pageNo) {

@@ -25,7 +25,7 @@
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.creator.id && row.isSubmit === 0)" @click="edit(row, index)">编辑</Button>
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.creator.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
-        <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="success" size="small" v-show="row.processId !== null || row.processId !== ''" @click="showFlows(row,index)">流程图</Button>
         <Button type="primary" size="small"
           style="margin-right: 1px;"
           v-show="showCheck(row)"
@@ -144,6 +144,12 @@
         <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
+    </Modal>
   </div>
 </template>
 
@@ -157,6 +163,8 @@ export default {
       pageNo: 0,
       dataTotal: 0,
       samplingName: '',
+      showCheckImgModal: false,
+      img: '',
       columns: [
         {
           title: 'ID',
@@ -320,6 +328,7 @@ export default {
     add () {
       this.formData = {}
       this.showAddModal = true
+      this.getProjectList()
     },
     search () {
       this.pageNo = 0
@@ -327,8 +336,10 @@ export default {
       this.getWitnessSamplingDataList()
     },
     edit (row, data) {
+      this.getProjectList()
       this.formData = row
       this.showEditModal = true
+      this.currentProjectName = row.project.name
     },
     getWitnessSamplingDataList () {
       let data = {
@@ -484,6 +495,12 @@ export default {
       this.checkMsg = ''
     },
     showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     // 分页
     changePageNo (pageNo) {
