@@ -134,7 +134,6 @@ export default {
   data () {
     return {
       currentProject: '',
-      currentStatus: '',
       projectList: [],
       checkStatusList: [],
       currentRowId: '',
@@ -380,7 +379,6 @@ export default {
       this.showCheckResultModal = true
       this.currentRowId = row.id
       this.taskId = row.taskId
-      alert(this.taskId)
     },
     // 提交审核结果
     confirmCheck () {

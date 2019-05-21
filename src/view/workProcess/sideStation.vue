@@ -27,7 +27,7 @@
             <Button type="error" size="small"
             v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.sponsor.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
             <Button type="warning" size="small"
-            v-show="(currentRank < row.originRank && row.isSubmit === 1)" @click="editCheckStatus(row,index)">审核</Button>
+            v-show="showCheck(row)" @click="check(row)">审核</Button>
         </template>
         </Table>
         <div style="margin: 10px;overflow: hidden">
@@ -118,22 +118,24 @@
             </div>
         </Modal>
         <Modal
-        v-model="showCheckStatusModal"
-        width="360">
-            <p slot="header" style="color:#f60;text-align:center">
-                <Icon type="ios-information-circle"></Icon>
-                <span>审核</span>
-            </p>
-            <div style="text-align:center">
-                <Select v-model="formData.checkStatus" :placeholder="currentStatus">
-                    <Option v-for="item in checkStatusList" :value="item" :key="item.id" :label="item.status"></Option>
-                </Select>
-            </div>
-            <div slot="footer">
-                <Button type="error" @click="confirmCheckStatus()">确认</Button>
-                <Button @click="cancelCheckStatus()" style="margin-left: 8px">取消</Button>
-            </div>
-        </Modal>
+        v-model="showCheckResultModal"
+        title="审核">
+        <Form ref="formData" :label-width="100">
+          <FormItem label="审核结果" prop="result">
+            <Select v-model="checkResult">
+              <Option value=true>通过</Option>
+              <Option value=false>不通过</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="审核意见" prop="message">
+            <Input v-model="checkMsg" placeholder="审核意见" />
+          </FormItem>
+        </Form>
+        <div slot="footer">
+          <Button type="primary" @click="confirmCheck()">提交</Button>
+          <Button @click="cancelCheck()" style="margin-left: 8px">取消</Button>
+        </div>
+      </Modal>
     </div>
 </template>
 <script>
@@ -141,16 +143,17 @@ export default {
   data () {
     return {
       currentProject: '',
-      currentStatus: '',
       projectList: [],
-      checkStatusList: [],
       currentRowId: '',
+      taskId: '',
+      checkResult: '',
+      checkMsg: '',
       currentEmplId: 0,
       // 模块显示
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
-      showCheckStatusModal: false,
+      showCheckResultModal: false,
       currentRank: '',
       // 分页
       pageSize: 5,
@@ -201,7 +204,7 @@ export default {
         {
           title: '创建日期',
           key: 'createDate',
-          width: 180,
+          width: 160,
           render: (h, params) => {
             const createDate = params.row.createDate
             if (createDate === null || createDate === '') {
@@ -214,7 +217,7 @@ export default {
         {
           title: '旁站日期',
           key: 'sideStationDate',
-          width: 180,
+          width: 150,
           render: (h, params) => {
             const sideStationDate = params.row.sideStationDate
             if (sideStationDate === null || sideStationDate === '') {
@@ -226,11 +229,16 @@ export default {
         },
         {
           title: '审核状态',
-          key: 'checkStatus',
-          width: 150,
+          key: 'auditStatus',
+          width: 120
+        },
+        {
+          title: '审核人',
+          key: 'employeeAudit',
+          width: 80,
           render: (h, params) => {
-            let newStatus = params.row.checkStatus
-            return h('span', newStatus.status)
+            let employee = params.row.majorAudit.employee.name
+            return h('span', employee)
           }
         },
         {
@@ -390,28 +398,46 @@ export default {
         }
       })
     },
-    editCheckStatus (row, index) {
-      this.formData = row
-      this.currentStatus = row.checkStatus.status
-      this.getCheckStatusList()
-      this.showCheckStatusModal = true
+    // 判断是否显示 审核 按钮，以及“总监审核”按钮
+    showCheck (row) {
+      if (row.needAudit) {
+        return true
+      }
     },
-    confirmCheckStatus () {
-      let url = '/sideStation/saveSideStation?access_token=' + localStorage.getItem('jwtToken')
-      this.$http.post(url, JSON.stringify(this.formData)).then(res => {
-        this.showCheckStatusModal = false
+    // 弹出审核弹框
+    check (row) {
+      this.showCheckResultModal = true
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+    },
+    // 提交审核结果
+    confirmCheck () {
+      let url = '/sideStation/checkSideStation'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        sideStationId: this.currentRowId,
+        taskId: this.taskId,
+        approved: this.checkResult,
+        auditOpinion: this.checkMsg
+      }
+      this.$http.post(url, data).then(res => {
+        this.showCheckResultModal = false
         if (res.data.status === true) {
-          this.$Message.info('审核成功')
           this.getSideStationDataList()
+          this.$Message.success(res.data.message)
         } else {
-          this.$Message.info('审核失败')
+          this.$Message.error(res.data.message)
         }
       })
+      this.checkResult = ''
+      this.checkMsg = ''
     },
-    cancelCheckStatus (row, index) {
-      this.formData.checkStatus = this.currentStatus
-      this.showCheckStatusModal = false
-      this.$Message.info('取消审核')
+    // 取消提交审核
+    cancelCheck () {
+      this.showCheckResultModal = false
+      this.$Message.info('您已取消审核')
+      this.checkResult = ''
+      this.checkMsg = ''
     },
     search () {
       this.getSideStationDataList()
