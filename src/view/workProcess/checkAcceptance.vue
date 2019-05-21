@@ -26,6 +26,8 @@
         <Button type="error" size="small"
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.creater.id && row.isSubmit === 0)" @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="warning" size="small"
+            v-show="showCheck(row)" @click="check(row)">审核</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -121,6 +123,25 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckResultModal"
+      title="审核">
+      <Form ref="formData" :label-width="100">
+        <FormItem label="审核结果" prop="result">
+          <Select v-model="checkResult">
+            <Option value=true>通过</Option>
+            <Option value=false>不通过</Option>
+          </Select>
+        </FormItem>
+        <FormItem label="审核意见" prop="message">
+          <Input v-model="checkMsg" placeholder="审核意见" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmCheck()">提交</Button>
+        <Button @click="cancelCheck()" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -206,18 +227,7 @@ export default {
         {
           title: '审核状态',
           key: 'auditStatus',
-          width: 100,
-          render: (h, params) => {
-            const Row = params.row
-            const color = Row.isSubmit === 0 ? 'default' : 'success'
-            const text = Row.isSubmit === 0 ? '未审核' : '已审核'
-            return h('Tag', {
-              props: {
-                type: 'dot',
-                color: color
-              }
-            }, text)
-          }
+          width: 100
         },
         {
           title: '操作',
@@ -250,6 +260,10 @@ export default {
       showAddModal: false,
       showEditModal: false,
       showDeleteModal: false,
+      showCheckResultModal: false,
+      checkResult: '',
+      checkMsg: '',
+      taskId: '',
       currentRowId: ''
     }
   },
@@ -384,6 +398,46 @@ export default {
       this.showDeleteModal = false
       this.currentRowId = ''
       this.$Message.info('您已取消删除！')
+    },
+    // 判断是否显示 审核 按钮，以及“总监审核”按钮
+    showCheck (row) {
+      if (row.needAudit) {
+        return true
+      }
+    },
+    // 弹出审核弹框
+    check (row) {
+      this.showCheckResultModal = true
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+    },
+    confirmCheck () {
+      let url = '/checkAcceptance/checkCheckAcceptance'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        checkAcceptanceId: this.currentRowId,
+        taskId: this.taskId,
+        approved: this.checkResult,
+        auditOpinion: this.checkMsg
+      }
+      this.$http.post(url, data).then(res => {
+        this.showCheckResultModal = false
+        if (res.data.status === true) {
+          this.getCheckAcceptance()
+          this.$Message.success(res.data.message)
+        } else {
+          this.$Message.error(res.data.message)
+        }
+      })
+      this.checkResult = ''
+      this.checkMsg = ''
+    },
+    // 取消提交审核
+    cancelCheck () {
+      this.showCheckResultModal = false
+      this.$Message.info('您已取消审核')
+      this.checkResult = ''
+      this.checkMsg = ''
     },
     // 分页
     changePageNo (pageNo) {
