@@ -127,8 +127,7 @@ export default {
         },
         {
           title: '角色描述',
-          key: 'description',
-          width: 110
+          key: 'description'
         },
         {
           title: '创建时间',
@@ -146,7 +145,7 @@ export default {
         {
           title: '修改时间',
           key: 'modificationDate',
-          width: 130,
+
           render: (h, params) => {
             const modificationDate = params.row.modificationDate
             if (modificationDate === null || modificationDate === '') {
@@ -387,6 +386,7 @@ export default {
         delete this.selectRoleData[i].checked
         delete this.selectRoleData[i].indeterminate
         delete this.selectRoleData[i].nodeKey
+        this.selectRoleData[i].subMenus = null
       }
       console.log(this.selectRoleData)
       let url = '/role/saveRoleMenus?access_token=' + localStorage.getItem('jwtToken') + '&roleId=' + this.currentRow.id
