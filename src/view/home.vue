@@ -26,29 +26,38 @@
         <Card style="width:99%;height:100%">
           <p slot="title">
             <Icon type="ios-film-outline"></Icon>
-            信息资讯
+            天气状况
           </p>
-          <a href="#" slot="extra" @click.prevent="changeLimit">
-            <Icon type="ios-loop-strong"></Icon>
-            查看更多
-          </a>
-          <div class="notice">
-            <div class="notice-item" v-for="item in 3" :key="item">
-              <div class="notice-btn">
-                <Icon type="md-square" v-if="item === 1" style="color: #ed4014" />
-                <Icon type="md-square" v-if="item === 2" style="color: #19be6b" />
-                <Icon type="md-square" v-if="item === 3" style="color: #ff9900" />
+          <div slot="extra">
+            济南
+          </div>
+          <div class="content">
+            <div class="menuPanel">
+              <Menu mode="horizontal" active-name="0" @on-select="changeWeatherDate">
+                <MenuItem name="0">
+                  <Icon type="ios-paper" />
+                  今天
+                </MenuItem>
+                <MenuItem name="1">
+                  <Icon type="ios-people" />
+                  明天
+                </MenuItem>
+                <MenuItem name="2">
+                  <Icon type="ios-construct" />
+                  后天
+                </MenuItem>
+              </Menu>
+            </div>
+            <div class="panel">
+              <div class="left">
+                <div class="item">温度： {{currentTem}}</div>
+                <div class="item">晴朗状况： {{currentType}}</div>
+                <div class="item">空气指数： {{currentAQI}}</div>
+                <div class="item">日期： {{currentWeaDate}}</div>
+                <div class="item">风向： {{currentF}}</div>
               </div>
-              <div class="notice-text">
-                xinwenlieb新闻列表xinwenlieb新闻列表xinxinwenlieb新闻列表xinwenlieb新闻列表xinwenlieb新闻列表xinwenlieb新闻列表xinwen···
-              </div>
-              <div class="notice-action">
-                <div class="notice-img">
-                  <Icon type="ios-more" size="20" style="float: right"/>
-                </div>
-                <div class="notice-date">
-                  2018-10-22 19:57
-                </div>
+              <div class="right">
+                <Icon type="md-cloud-done" size="50" :color="currentColor"/>
               </div>
             </div>
           </div>
@@ -66,7 +75,7 @@
           查看更多
         </a>
         <div class="notice">
-          <Table stripe :columns="columns1" :data="data1"></Table>
+          <Table stripe :columns="taskColumns" :data="toDoTaskData"></Table>
         </div>
       </Card>
     </Row>
@@ -77,21 +86,33 @@ export default {
   data () {
     return {
       expPostingData: [],
-      columns1: [
+      taskColumns: [
         {
-          title: 'Name',
+          title: '任务名称',
           key: 'name'
         },
         {
-          title: 'Age',
-          key: 'age'
+          title: 'createTime',
+          key: '创建时间',
+          render: (h, params) => {
+            const createDate = params.row.createTime
+            if (createDate === null || createDate === '') {
+              return h('span', '')
+            } else {
+              return h('span', createDate.substring(0, 10))
+            }
+          }
         },
         {
-          title: 'Address',
-          key: 'address'
+          title: '任务进程号',
+          key: 'processInstanceId'
+        },
+        {
+          title: '任务类别',
+          key: 'taskDefinitionKey'
         }
       ],
-      data1: [
+      toDoTaskData: [
         {
           name: 'John Brown',
           age: 18,
@@ -116,12 +137,23 @@ export default {
           address: 'Ottawa No. 2 Lake Park',
           date: '2016-10-04'
         }
-      ]
+      ],
+      currentUserId: '',
+      weatherData: [],
+      currentTem: '',
+      currentType: '',
+      currentAQI: '',
+      currentWeaDate: '',
+      currentF: '',
+      currentColor: ''
     }
   },
   created () {
-    localStorage.setItem('operation', JSON.stringify(this.$route.params.operation))
+    this.currentEmplId = JSON.parse(localStorage.getItem('currentUser')).id
+    localStorage.setItem('currentCityId', 101120101)
+    this.getToDoTask()
     this.getExpPostingPage()
+    this.getWeather()
   },
   methods: {
     getExpPostingPage () {
@@ -134,6 +166,72 @@ export default {
           this.expPostingData = res.data
         }
       })
+    },
+    getToDoTask () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/employee/getCurrentUser'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.currentUserId = res.data.id
+          let taskData = {
+            access_token: localStorage.getItem('jwtToken'),
+            userId: this.currentUserId
+          }
+          let taskUrl = '/getMyTaskList'
+          this.$http.post(taskUrl, taskData).then(res => {
+            if (res.status === 200) {
+              this.toDoTaskData = res.data
+            }
+          })
+        }
+      })
+    },
+    getWeather () {
+      let url = '/getWeatherList'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        cityId: localStorage.getItem('currentCityId')
+      }
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.weatherData[0] = res.data.data.forecast[0]
+          this.weatherData[1] = res.data.data.forecast[1]
+          this.weatherData[2] = res.data.data.forecast[2]
+          this.setShowWeaAtt(0)
+        } else {
+          this.$message.info('获取天气情况失败！')
+        }
+      })
+    },
+    setShowWeaAtt (i) {
+      this.currentTem = this.weatherData[i].low + '~' + this.weatherData[i].high
+      this.currentWeaDate = this.weatherData[i].ymd + ' ' + this.weatherData[i].week
+      this.currentAQI = this.weatherData[i].aqi
+      this.currentF = this.weatherData[i].fx + ' ' + this.weatherData[i].fl
+      this.currentType = this.weatherData[i].type
+    },
+    changeWeatherDate (name) {
+      this.setShowWeaAtt(parseInt(name))
+    }
+  },
+  watch: {
+    currentType: function (val) {
+      switch (val) {
+        case '晴':
+          this.currentColor = 'green'
+          break
+        case '多云':
+          this.currentColor = 'default'
+          break
+        case '小雨':
+          this.currentColor = '#515a6e'
+          break
+        default:
+          this.currentColor = '#2b85e4'
+          break
+      }
     }
   }
 }
@@ -142,11 +240,35 @@ export default {
 .header-row {
  height: 50% !important;
 }
-.notice {
+.ivu-menu-horizontal {
+  height: 30px;
+  line-height: 1px;
+}
+.content {
   /* padding-left: 20px; */
+  height: 100%;
+}
+.content .menuPanel {
+}
+.content .panel {
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+}
+.panel .left{
+  width: 70%;
+  margin-top: 10px;
+  display: flex;
+  flex-flow: column;
+}
+.panel .right{
+  width: 20%;
+  margin-top: 20px;
+}
+.panel .item {
+  margin-bottom: 4px;
 }
 .notice-item {
-  /* background-color: antiquewhite; */
   height: 3rem;
   margin-bottom: 5px;
   display: flex;
