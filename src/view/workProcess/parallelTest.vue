@@ -127,6 +127,12 @@
           <Button @click="cancelCheck()" style="margin-left: 8px">取消</Button>
         </div>
       </Modal>
+      <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
+    </Modal>
     </div>
 </template>
 <script>
@@ -146,6 +152,8 @@ export default {
       showEditModal: false,
       showDeleteModal: false,
       showCheckResultModal: false,
+      showCheckImgModal: false,
+      img: '',
       currentRank: 0,
       // 分页
       pageSize: 5,
@@ -362,6 +370,12 @@ export default {
       this.$Message.info('您已取消删除！')
     },
     showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     getCheckStatusList () {
       let data = {
