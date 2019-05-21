@@ -70,6 +70,17 @@ export default{
       })
     })
   },
+  logout: function (url) {
+    axios({
+      method: 'GET',
+      url: url,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      baseURL: root,
+      withCredentials: true
+    })
+  },
   put: function (url, params) {
     return new Promise((resolve, reject) => {
       // 设置超时时间
