@@ -204,6 +204,7 @@ export default {
       currentDepartmentName: '',
       currentTestPaperCategoryName: '',
       currentRowId: '',
+      eid: '',
       buttonList: [],
       searchTestPaperName: '',
       searchTestPaperCategory: '',
@@ -238,7 +239,21 @@ export default {
       this.$router.push('/testPaperDetail/listTestPaperDetail' + row.id)
     },
     test (row, index) {
-      this.$router.push('/answerPaper/listAnswerPaper' + row.id)
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        testPaperId: row.id
+      }
+      let url = '/examinationRecord/addExaminationRecord'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          console.log(res)
+          this.eid = res.data.object.id
+          this.$Message.success(res.data.message + '，开始考试')
+          this.$router.push({name: '考试', params: {id: row.id, eid: this.eid}})
+        } else {
+          this.$Message.error(res.data.message)
+        }
+      })
     },
     edit (row, index) {
       this.formData = row
