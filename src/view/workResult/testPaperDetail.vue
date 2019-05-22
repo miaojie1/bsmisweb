@@ -71,6 +71,9 @@
         <FormItem label="题目分值" prop="fullScore">
           <Input v-model="formData.fullScore" type="number" placeholder="题目分值" />
         </FormItem>
+        <FormItem label="试题答案" prop="answer">
+          <Input v-model="formData.answer" placeholder="试题答案" />
+        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmEdit('formData')">提交</Button>
@@ -92,6 +95,9 @@
         </FormItem>
         <FormItem label="题目分值" prop="fullScore">
           <Input v-model="formData.fullScore" type="number" placeholder="题目分值" />
+        </FormItem>
+        <FormItem label="试题答案" prop="answer">
+          <Input v-model="formData.answer" placeholder="试题答案" />
         </FormItem>
       </Form>
       <div slot="footer">
@@ -122,6 +128,10 @@ export default {
         {
           title: '题目分值',
           key: 'fullScore'
+        },
+        {
+          title: '试题答案',
+          key: 'answer'
         },
         {
           title: '创建时间',

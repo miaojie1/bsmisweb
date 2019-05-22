@@ -111,8 +111,7 @@
         <Button @click="cancelEdit('formData')" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
-    </Modal>
-        <Modal
+    <Modal
       v-model="showAddModal"
       title="增加学习资料">
       <Form ref="formData" :model="formData" :rules="ruleValidate" :label-width="100">
