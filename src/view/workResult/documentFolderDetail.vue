@@ -203,7 +203,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/documentCategory/listAllDocumentCategories'
+      let url = '/document/listAllDocumentCategories'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.documentCategoryItem = res.data

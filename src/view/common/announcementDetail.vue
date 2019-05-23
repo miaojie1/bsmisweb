@@ -41,10 +41,10 @@ export default {
         access_token: localStorage.getItem('jwtToken')
       }
       let url = '/posting/announcementDetail/postingId/' + id
-      this.$http.get(url, data).then(res => {
+      this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           console.log(res)
-          this.announcementData = res.data
+          this.announcementData = res.data.object
         }
       })
     },
