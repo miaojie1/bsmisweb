@@ -58,6 +58,7 @@
               </div>
               <div class="right">
                 <Icon type="md-cloud-done" size="50" :color="currentColor"/>
+                <!-- <img src="currentImgUrl" width="100"/> -->
               </div>
             </div>
           </div>
@@ -145,7 +146,8 @@ export default {
       currentAQI: '',
       currentWeaDate: '',
       currentF: '',
-      currentColor: ''
+      currentColor: '',
+      currentImgUrl: '../assets/qing.png'
     }
   },
   created () {
@@ -220,6 +222,7 @@ export default {
     currentType: function (val) {
       switch (val) {
         case '晴':
+          this.currentImgUrl = '../assets/qing.png'
           this.currentColor = 'green'
           break
         case '多云':
