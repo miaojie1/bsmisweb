@@ -22,16 +22,6 @@
             <DropdownItem name="logout">注销登录</DropdownItem>
           </DropdownMenu>
         </Dropdown>
-        <Dropdown style="float:right; margin-left: 100px">
-          <a href="javascript:void(0)">
-            <Icon type="md-add" color="white" style="margin-right: 40px" size="30"/>
-          </a>
-          <DropdownMenu slot="list" class="layout-infor-menu">
-            <DropdownItem>设置1</DropdownItem>
-            <DropdownItem>设置2</DropdownItem>
-            <DropdownItem>设置3</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
       </Header>
       <Layout>
         <Sider hide-trigger class="navContainer">
