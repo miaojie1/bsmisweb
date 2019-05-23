@@ -142,6 +142,7 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <iframe :src="iframeSrc" v-show="iframeState" frameborder=0 width="400" height="400"></iframe>
   </div>
 </template>
 
@@ -233,7 +234,7 @@ export default {
                     this.loadAttachment(params)
                   }
                 }
-              }, '查看')
+              }, '预览部分附件')
             }
             return h('span', '暂无')
           }
@@ -247,11 +248,13 @@ export default {
       ],
       postingData: [],
       buttonList: [],
+      iframeState: false,
       pageNo: 0,
       pageSize: 2,
       postingDataTotal: 0,
       searchData: '',
       formData: {},
+      iframeSrc: '',
       // 校验规则
       ruleValidate: {
         name: [
@@ -290,6 +293,7 @@ export default {
     },
     add () {
       this.formData = {}
+      this.effectAndExpireDate = ''
       this.actionUrl = 'http://127.0.0.1:8082/supervision/attachment/upload?access_token=' + localStorage.getItem('jwtToken')
       this.showAddModal = true
     },
@@ -413,8 +417,17 @@ export default {
       })
     },
     loadAttachment (data) {
-      debugger
-      console.log(data.row)
+      let params = {
+        access_token: localStorage.getItem('jwtToken'),
+        fileName: data.row.attachments[0].name
+      }
+      let url = '/attachment/preview'
+      this.$http.post(url, params).then(res => {
+        if (res.data.status === true) {
+          this.iframeSrc = ' http://dcsapi.com?k=2032220&url=' + res.data.message
+          this.iframeState = true
+        }
+      })
     }
   },
   watch: {
