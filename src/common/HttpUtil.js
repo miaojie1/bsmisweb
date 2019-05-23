@@ -1,27 +1,27 @@
 import {Message} from 'iview'
+const self = this
 var axios = require('axios')
 axios.interceptors.response.use(
   res => {
     return res
   },
   err => {
-    debugger
     if (err.response.status === 400) {
-      // localStorage.clear()
+      localStorage.clear()
       Message.info({
         content: '用户名或者密码错误！',
         duration: 10,
         closable: true
       })
-      this.$router.push('/')
-    } else if (err.response.status === 401) {
-      // localStorage.clear()
+      self.$router.push('/')
+    } else if (err.response.status === 401 || err.response.status === 403) {
+      localStorage.clear()
       Message.info({
         content: '登录信息失效，请重新登录！',
         duration: 10,
         closable: true
       })
-      this.$router.push({
+      self.$router.push({
         path: '/login'
       })
     }

@@ -380,7 +380,6 @@ export default {
       this.pageSize = pageSize
     },
     confirmAddRoot () {
-      debugger
       this.selectRoleData = this.$refs.roleTree.getCheckedAndIndeterminateNodes()
       for (var i = 0; i < this.selectRoleData.length; i++) {
         delete this.selectRoleData[i].checked
@@ -391,7 +390,6 @@ export default {
       console.log(this.selectRoleData)
       let url = '/role/saveRoleMenus?access_token=' + localStorage.getItem('jwtToken') + '&roleId=' + this.currentRow.id
       this.$http.postForm(url, JSON.stringify(this.selectRoleData)).then(res => {
-        debugger
         if (res.data.status === true) {
           this.$Message.success(res.data.message)
           this.selectRoleData = []

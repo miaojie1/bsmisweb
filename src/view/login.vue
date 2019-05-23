@@ -73,10 +73,16 @@ export default {
 }
 </script>
 <style>
+body{
+  background: url("../assets/loginbg.png") no-repeat;
+  height:100%;
+  width:100%;
+  overflow: hidden;
+  background-size:cover;
+}
 .container {
   width: 100% !important;
   height: 100% !important;
-  /* background-image: url('../assets/loginbg.png'); */
 }
 .loginForm .ivu-form .ivu-form-label-right {
   background-image: url('../assets/loginbg.png');
@@ -91,8 +97,11 @@ export default {
   padding: 20px 30px 20px 30px;
   background: #fff;
   border: 1px solid #eaeaea;
-  box-shadow: 0 0 25px #cac6c6;
+  box-shadow: 0 0 5px #cac6c6;
   text-align: center;
+  position: fixed;
+  right: 150px;
+  top: 50px;
 }
 .loginText {
   display: block;
