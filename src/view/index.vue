@@ -136,9 +136,10 @@ export default {
           title: '提示',
           content: '确定退出系统吗？',
           onOk: () => {
-            this.logout()
-            // this.$router.push('/login')
-            // this.$Message.info('成功退出！')
+            var storage = window.localStorage
+            storage.removeItem('jwtToken')
+            this.$router.push('/login')
+            this.$Message.info('您已退出系统')
           },
           onCancel: () => {
             this.$Message.info('您已取消退出！')
@@ -188,12 +189,6 @@ export default {
           this.usermessage = res.data
           localStorage.setItem('currentUser', JSON.stringify(res.data))
         }
-      })
-    },
-    logout () {
-      let url = '/logout'
-      this.$http.get(url).then(res => {
-        debugger
       })
     },
     getInfo () {

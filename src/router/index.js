@@ -203,9 +203,14 @@ export default new Router({
           component: () => import('@/view/workResult/testPaperDetail')
         },
         {
-          path: '/answerPaper/listAnswerPaper:id',
+          path: '/answerPaper/listAnswerPaper/examinationRecord',
           name: '考试',
           component: () => import('@/view/workResult/answerPaper')
+        },
+        {
+          path: '/examinationRecord/listExaminationRecord',
+          name: '考试记录',
+          component: () => import('@/view/workResult/examinationRecord')
         }
       ]
     }
