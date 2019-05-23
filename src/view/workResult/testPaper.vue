@@ -5,13 +5,13 @@
         <Input suffix="ios-search" placeholder="请输入考卷名称进行查询···" v-model="searchTestPaperName"/>
       </i-col>
       <i-col span="5">
-        <Select style="width:200px" v-model="searchTestPaperCategory"  @change="changeCategory($event)">
+        <Select style="width:200px" v-model="searchTestPaperCategory"  @change="changeCategory($event)" placeholder="请选择类别">
           <Option v-for="(item,index) in testPaperCategoryItem" :value="item.id" :key="index">{{item.description}}
           </Option>
         </Select>
       </i-col>
       <i-col span="5">
-        <Select style="width:200px" v-model="searchDepartment"  @change="changeDepartment($event)">
+        <Select style="width:200px" v-model="searchDepartment"  @change="changeDepartment($event)" placeholder="请选择部门">
           <Option v-for="(item,index) in departmentItem" :value="item.id" :key="index">{{item.name}}
           </Option>
         </Select>
