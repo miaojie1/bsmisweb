@@ -83,9 +83,6 @@
         <FormItem label="备注" prop="remark">
           <Input v-model="formData.remark" placeholder="备注"/>
         </FormItem>
-        <FormItem label="版本" prop="version">
-          <Input v-model="formData.version" placeholder="版本" />
-        </FormItem>
       </Form>
       <div slot="footer">
         <Button type="primary" @click="confirmEdit('formData')">提交</Button>
@@ -365,7 +362,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/employee/listAllEmployees'
+      let url = '/project/listAllEmployees'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.employees = res.data
