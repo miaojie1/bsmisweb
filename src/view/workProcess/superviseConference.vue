@@ -28,6 +28,14 @@
         v-show="(currentRank < row.originRank && row.isSubmit === 1) || (currentEmplId === row.initiator.id && row.isSubmit === 0)"
         @click="remove(row, index)">删除</Button>
         <Button type="success" size="small" @click="showFlows(row,index)">流程图</Button>
+        <Button type="success" size="small"
+          style="margin-right: 1px;"
+          @click="writeSummary(row, index)"
+          v-show="showWriter(row)">填写会议纪要</Button>
+        <Button type="primary" size="small"
+          style="margin-right: 1px;"
+          v-show="showCheck(row)"
+          @click="check(row)">审核</Button>
       </template>
     </Table>
     <div style="float: right;">
@@ -66,13 +74,17 @@
             v-model="formData.endDate"
             ></DatePicker>
         </FormItem>
+        <FormItem label="所属项目" prop="project">
+          <Select v-model="formData.project" :placeholder="currentProjectName">
+            <Option v-for="item in projectList" :value="item" :key="item.id" :label="item.name"></Option>
+          </Select>
+        </FormItem>
         <FormItem label="地点" prop="location">
           <Input v-model="formData.location" placeholder="地点" />
         </FormItem>
-        <FormItem label="会议总结" prop="conferenceSummaryList">
-          <Select style="width:200px" v-model="formData.conferenceSummaryList" multiple>
-            <Option v-for="item in conferenceSummaryListItem" :value="item" :key="item.id" name="conferenceSummaryList">{{item.name }}
-            </Option>
+        <FormItem label="会议纪要填写人员" prop="employeeWriteList">
+          <Select v-model="formData.employeeWriteList" multiple>
+            <Option v-for="item in employeeList" :value="item" :key="item.id" :label="item.name"></Option>
           </Select>
         </FormItem>
         <FormItem label="评述" prop="remark">
@@ -108,13 +120,17 @@
             v-model="formData.endDate"
             ></DatePicker>
         </FormItem>
+        <FormItem label="所属项目" prop="project">
+          <Select v-model="formData.project" :placeholder="currentProjectName">
+            <Option v-for="item in projectList" :value="item" :key="item.id" :label="item.name"></Option>
+          </Select>
+        </FormItem>
         <FormItem label="地点" prop="location">
           <Input v-model="formData.location" placeholder="地点" />
         </FormItem>
-        <FormItem label="会议总结" prop="conferenceSummaryList">
-          <Select style="width:200px" v-model="formData.conferenceSummaryList" multiple>
-            <Option v-for="item in conferenceSummaryListItem" :value="item" :key="item.id" name="conferenceSummaryList">{{item.name }}
-            </Option>
+        <FormItem label="会议纪要填写人员" prop="employeeWriteList">
+          <Select v-model="formData.employeeWriteList" :placeholder="currentEmployee" multiple>
+            <Option v-for="item in employeeList" :value="item" :key="item.id" :label="item.name"></Option>
           </Select>
         </FormItem>
         <FormItem label="评述" prop="remark">
@@ -143,6 +159,46 @@
         <Button @click="cancelDelete()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showWriteSummary"
+      title="填写会议纪要">
+      <Form ref="formData" :model="formData" :label-width="100" :rules="ruleValidate">
+        <FormItem label="会议纪要" prop="content">
+          <Input v-model="content" placeholder="会议纪要" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmWrite('formData')">提交</Button>
+        <Button @click="cancelWrite('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
+    <Modal
+      v-model="showMajorCheckModal"
+      title="总监审核">
+      <Table
+      border
+      highlight-row
+      :columns="writeColumns"
+      :data="employeeWriteData"
+      style="margin-top: 15px"
+      size="small">
+      </Table>
+      <Form ref="formData" :model="formData" :rule="checkValidate" :label-width="100" style="margin-top: 10px">
+        <FormItem label="审核结果" prop="result">
+          <Select v-model="checkResult">
+            <Option value=true>通过</Option>
+            <Option value=false>不通过</Option>
+          </Select>
+        </FormItem>
+        <FormItem label="审核意见" prop="message">
+          <Input v-model="checkMsg" placeholder="审核意见" />
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="confirmCheck('formData')">提交</Button>
+        <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -158,7 +214,7 @@ export default {
           width: 100
         },
         {
-          title: '会议纪要',
+          title: '会议内容',
           key: 'content',
           width: 150
         },
@@ -231,14 +287,19 @@ export default {
           }
         },
         {
+          title: '审核状态',
+          key: 'auditStatus',
+          width: 100
+        },
+        {
           title: '操作',
           slot: 'action',
-          width: 180,
+          width: 250,
           fixed: 'right'
         }
       ],
       formData: {},
-      initiatorItem: [],
+      employeeList: [],
       conferenceSummaryListItem: [],
       ruleValidate: {
         content: [
@@ -263,12 +324,51 @@ export default {
       currentRank: '',
       currentEmplId: 0,
       currentEmpl: {},
-      startEndTime: ''
+      startEndTime: '',
+      showSetEmplModal: false,
+      // 所有项目
+      projectList: [],
+      showWriteSummary: false,
+      taskId: '',
+      employeeWriteData: [],
+      writeColumns: [
+        {
+          title: '会议',
+          key: 'conference',
+          width: 100,
+          render: (h, params) => {
+            const conference = params.row.conference
+            return h('span', conference.content)
+          }
+        },
+        {
+          title: '会议纪要',
+          content: 'content',
+          width: 285
+        },
+        {
+          title: '填写人员',
+          key: 'employee',
+          width: 100,
+          render: (h, params) => {
+            const employee = params.row.employee
+            return h('span', employee.username)
+          }
+        }
+      ],
+      showMajorCheckModal: false,
+      // 审核结果
+      checkResult: '',
+      // 审核意见
+      checkMsg: '',
+      // 会议纪要
+      content: ''
     }
   },
   created () {
     this.getConference()
     this.getAllEmployees()
+    this.getProjectList()
     this.getAllConferenceSummary()
     this.currentEmpl = JSON.parse(localStorage.getItem('currentUser'))
     this.currentEmplId = JSON.parse(localStorage.getItem('currentUser')).id
@@ -321,7 +421,18 @@ export default {
       let url = '/conference/listAllEmployees'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
-          this.initiatorItem = res.data
+          this.employeeList = res.data
+        }
+      })
+    },
+    getProjectList () {
+      let data = {
+        access_token: localStorage.getItem('jwtToken')
+      }
+      let url = '/conference/listAllProjects'
+      this.$http.post(url, data).then(res => {
+        if (res.status === 200) {
+          this.projectList = res.data
         }
       })
     },
@@ -338,24 +449,30 @@ export default {
     },
     confirmAdd (name, isSubmit) {
       this.formData.isSubmit = isSubmit
-      this.$refs[name].validate((valid) => {
-        if (valid) {
-          let url = '/conference/saveConference?access_token=' + localStorage.getItem('jwtToken')
-          this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
-            this.showAddModal = false
-            if (res.data.status === true) {
-              this.getConference()
-              this.$Message.success(res.data.message)
-              this.$refs[name].resetFields()
-            } else {
-              this.$refs[name].resetFields()
-              this.$Message.error(res.data.message)
-            }
-          })
-        } else {
-          this.$Message.error('表单数据校验失败!')
-        }
-      })
+      if (this.formData.project === undefined || this.formData.project === null) {
+        this.$Message.error('请选择所属项目！')
+      } else if (this.formData.employeeWriteList === undefined || this.formData.employeeWriteList === null) {
+        this.$Message.error('请选择填写会议纪要人员！')
+      } else {
+        this.$refs[name].validate((valid) => {
+          if (valid) {
+            let url = '/conference/saveConference?access_token=' + localStorage.getItem('jwtToken')
+            this.$http.postForm(url, JSON.stringify(this.formData)).then(res => {
+              this.showAddModal = false
+              if (res.data.status === true) {
+                this.getConference()
+                this.$Message.success(res.data.message)
+                this.$refs[name].resetFields()
+              } else {
+                this.$refs[name].resetFields()
+                this.$Message.error(res.data.message)
+              }
+            })
+          } else {
+            this.$Message.error('表单数据校验失败!')
+          }
+        })
+      }
     },
     confirmEdit (name, isSubmit) {
       this.formData.isSubmit = isSubmit
@@ -407,6 +524,87 @@ export default {
       this.showDeleteModal = false
       this.currentRowId = ''
       this.$Message.info('您已取消删除！')
+    },
+    showWriter (row) {
+      if (row.needWrite) {
+        return true
+      }
+    },
+    writeSummary (row, index) {
+      this.showWriteSummary = true
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+    },
+    confirmWrite (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          let url = '/conference/allotUserWrite'
+          let data = {
+            access_token: localStorage.getItem('jwtToken'),
+            conferenceId: this.currentRowId,
+            taskId: this.taskId,
+            content: this.content
+          }
+          this.$http.post(url, data).then(res => {
+            this.showWriteSummary = false
+            if (res.data.status === true) {
+              this.getConference()
+              this.content = ''
+              this.$refs.formData.resetFields()
+              this.$Message.success(res.data.message)
+            } else {
+              this.$refs.formData.resetFields()
+              this.$Message.error(res.data.message)
+            }
+          })
+        } else {
+          this.$Message.error('表单数据校验失败!')
+        }
+      })
+    },
+    cancelWrite () {
+      this.showWriteSummary = false
+      this.content = ''
+      this.$Message.info('您已取消填写会议纪要！')
+    },
+    showCheck (row) {
+      if (row.needAudit) {
+        return true
+      }
+    },
+    check (row) {
+      this.currentRowId = row.id
+      this.taskId = row.taskId
+      this.showMajorCheckModal = true
+    },
+    // 提交审核结果
+    confirmCheck (name) {
+      let url = '/conference/checkConference'
+      let data = {
+        access_token: localStorage.getItem('jwtToken'),
+        conferenceId: this.currentRowId,
+        taskId: this.taskId,
+        approved: this.checkResult,
+        auditOpinion: this.checkMsg
+      }
+      this.$http.post(url, data).then(res => {
+        this.showMajorCheckModal = false
+        this.checkResult = null
+        this.checkMsg = ''
+        if (res.data.status === true) {
+          this.getConference()
+          this.$Message.success(res.data.message)
+        } else {
+          this.$Message.error(res.data.message)
+        }
+      })
+    },
+    // 取消提交审核
+    cancelCheck () {
+      this.showMajorCheckModal = false
+      this.$Message.info('您已取消审核')
+      this.checkResult = ''
+      this.checkMsg = ''
     },
     // 分页
     changePageNo (pageNo) {
