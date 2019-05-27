@@ -199,6 +199,12 @@
         <Button @click="cancelCheck('formData')" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
+    </Modal>
   </div>
 </template>
 
@@ -235,6 +241,19 @@ export default {
           render: (h, params) => {
             const row = params.row
             return h('span', row.initiator.name)
+          }
+        },
+        {
+          title: '填写人',
+          key: 'employeeWriteList',
+          width: 150,
+          render: (h, params) => {
+            const employee = params.row.employeeWriteList
+            let name = ''
+            for (let i = 0; i < employee.length; i++) {
+              name += employee[i].username + '、'
+            }
+            return h('span', name)
           }
         },
         {
@@ -362,7 +381,8 @@ export default {
       // 审核意见
       checkMsg: '',
       // 会议纪要
-      content: ''
+      content: '',
+      showCheckImgModal: false
     }
   },
   created () {
@@ -605,6 +625,14 @@ export default {
       this.$Message.info('您已取消审核')
       this.checkResult = ''
       this.checkMsg = ''
+    },
+    showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     // 分页
     changePageNo (pageNo) {

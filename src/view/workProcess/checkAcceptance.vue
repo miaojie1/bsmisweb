@@ -142,6 +142,12 @@
         <Button @click="cancelCheck()" style="margin-left: 8px">取消</Button>
       </div>
     </Modal>
+    <Modal
+      v-model="showCheckImgModal"
+      title="流程图">
+      <img :src="img"/>
+      <div slot="footer"></div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -264,7 +270,8 @@ export default {
       checkResult: '',
       checkMsg: '',
       taskId: '',
-      currentRowId: ''
+      currentRowId: '',
+      showCheckImgModal: false
     }
   },
   created () {
@@ -438,6 +445,15 @@ export default {
       this.$Message.info('您已取消审核')
       this.checkResult = ''
       this.checkMsg = ''
+    },
+    // 显示流程图
+    showFlows (row, index) {
+      let url = '/getFlowImg/' + row.processId + '?access_token=' + localStorage.getItem('jwtToken')
+      this.$http.get(url).then(res => {
+        this.showCheckImgModal = true
+        this.img = 'data:image/png;base64,' +
+          btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
+      })
     },
     // 分页
     changePageNo (pageNo) {
