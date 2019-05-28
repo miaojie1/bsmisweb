@@ -36,6 +36,10 @@
           style="margin-right: 1px;"
           v-show="showCheck(row)"
           @click="check(row)">审核</Button>
+          <Button type="primary" size="small"
+          style="margin-right: 1px;"
+          v-show="showDetail(row)"
+          @click="detail(row)">详情</Button>
       </template>
     </Table>
     <div style="float: right;">
@@ -204,6 +208,37 @@
       title="流程图">
       <img :src="img"/>
       <div slot="footer"></div>
+    </Modal>
+    <Modal v-model="showDetailModal" title="会议记录详情">
+      <p>会议题目：{{detailRow.content}}</p>
+      <p>开始时间：{{detailRow.startDate}}</p>
+      <p>结束时间：{{detailRow.endDate}}</p>
+      <p>会议地点：{{detailRow.location}}</p>
+      <span>
+        <p v-if="detailRow.initiator">发起人：{{detailRow.initiator.name}}</p>
+        <p v-else>发起人：</p>
+      </span>
+      <span>
+        <p v-if="detailRow.project">所属项目：{{detailRow.project.name}}</p>
+        <p v-else>所属项目：</p>
+      </span>
+      <p>
+        会议纪要填写人：
+        <span v-for="(item, index) in detailRow.employeeWriteList" :key="index">{{item.username}}、</span>
+      </p>
+      <p v-if="detailRow.conferenceSummaryList">
+        会议纪要：
+        <span v-for="(item, index) in detailRow.conferenceSummaryList" :key="index">
+          <p v-if="item">{{item.content}}；</p>
+        </span>
+      </p>
+      <p v-else>会议纪要：</p>
+      <p>创建时间：{{detailRow.createDate}}</p>
+      <p>修改时间：{{detailRow.modificationDate}}</p>
+      <p>备注：{{detailRow.remark}}</p>
+      <div slot="footer">
+        <Button type="primary" @click="closeDetail">关闭</Button>
+      </div>
     </Modal>
   </div>
 </template>
@@ -382,7 +417,9 @@ export default {
       checkMsg: '',
       // 会议纪要
       content: '',
-      showCheckImgModal: false
+      showCheckImgModal: false,
+      showDetailModal: false,
+      detailRow: ''
     }
   },
   created () {
@@ -633,6 +670,20 @@ export default {
         this.img = 'data:image/png;base64,' +
           btoa(new Uint8Array(res.data).reduce((res, byte) => res + String.fromCharCode(byte), ''))
       })
+    },
+    // 是否显示会议记录详情按钮
+    showDetail (row) {
+      if (row.auditStatus === '审核通过') {
+        return true
+      }
+    },
+    detail (row) {
+      this.detailRow = row
+      this.showDetailModal = true
+    },
+    // 关闭会议记录详情窗口
+    closeDetail () {
+      this.showDetailModal = false
     },
     // 分页
     changePageNo (pageNo) {
