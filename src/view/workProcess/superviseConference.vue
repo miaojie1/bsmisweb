@@ -387,20 +387,6 @@ export default {
       employeeWriteData: [],
       writeColumns: [
         {
-          title: '会议',
-          key: 'conference',
-          width: 100,
-          render: (h, params) => {
-            const conference = params.row.conference
-            return h('span', conference.content)
-          }
-        },
-        {
-          title: '会议纪要',
-          content: 'content',
-          width: 285
-        },
-        {
           title: '填写人员',
           key: 'employee',
           width: 100,
@@ -408,6 +394,16 @@ export default {
             const employee = params.row.employee
             return h('span', employee.username)
           }
+        },
+        {
+          title: '会议纪要',
+          key: 'content',
+          width: 285
+        },
+        {
+          title: '填写时间',
+          key: 'createDate',
+          width: 150
         }
       ],
       showMajorCheckModal: false,
@@ -632,6 +628,9 @@ export default {
     check (row) {
       this.currentRowId = row.id
       this.taskId = row.taskId
+      this.employeeWriteData = row.conferenceSummaryList
+      this.employeeWriteData.conference = row.content
+      console.log(this.employeeWriteData)
       this.showMajorCheckModal = true
     },
     // 提交审核结果
