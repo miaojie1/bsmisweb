@@ -22,9 +22,9 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" @click="remove(row, index)">删除</Button>
-        <!-- <Button type="primary" size="small" @click="showDetail(row, index)">详情</Button> -->
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEdit(row)" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" v-show="showDelete(row)" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" @click="showDetail(row, index)">详情</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -196,10 +196,42 @@
       </div>
     </Modal>
     <Modal
-        v-model="showDetailModal"
-        title="用户详情"
-        @on-ok="ok">
-        <span>姓名：{{columns.name}}</span>
+      v-model="showDetailModal"
+      title="用户详情"
+      @on-ok="ok">
+      <p>姓名：{{currentRowDetail.name}}</p>
+      <p>用户名：{{currentRowDetail.username}}</p>
+      <p>性别：{{currentRowDetail.sex}}</p>
+      <p>邮箱：{{currentRowDetail.email}}</p>
+      <p>手机号：{{currentRowDetail.mobile}}</p>
+      <p>入职日期：{{currentRowDetail.entryDate}}</p>
+      <p>入职日期：{{currentRowDetail.entryDate}}</p>
+      <span>
+        <p v-if="currentRowDetail.chief">上级主管：{{currentRowDetail.chief.name}}</p>
+        <p v-else>上级主管：</p>
+      </span>
+      <p>创建日期：{{currentRowDetail.createDate}}</p>
+      <p v-if="currentRowDetail.modificationDate">修改日期：{{currentRowDetail.modificationDate}}</p>
+      <p v-else>修改日期：无修改</p>
+      <span>
+        <p v-if="currentRowDetail.employeeStatus">员工状态：{{currentRowDetail.employeeStatus.name}}</p>
+        <p v-else>员工状态：</p>
+      </span>
+      <span>
+        <p v-if="currentRowDetail.department">员工部门：{{currentRowDetail.department.name}}</p>
+        <p v-else>员工部门：</p>
+      </span>
+      <span>
+        <p v-if="currentRowDetail.departmentPosition">员工职位：{{currentRowDetail.departmentPosition.name}}</p>
+        <p v-else>员工职位：</p>
+      </span>
+      <p>
+        员工角色：
+        <span v-for="(item, index) in currentRowDetail.roles" :key="index">{{item.description}}、</span>
+      </p>
+      <div slot="footer">
+        <Button type="primary" @click="closeDetail">关闭</Button>
+      </div>
     </Modal>
   </div>
 </template>
@@ -317,14 +349,14 @@ export default {
           { required: true, message: '密码不可以为空', trigger: 'blur' }
         ]
       },
-      showAddBtn: false,
-      showDeleteBtn: false,
-      showEditBtn: false,
+      // showAddBtn: false,
+      // showDeleteBtn: false,
+      // showEditBtn: false,
       showAddModal: false,
       showEditModal: false,
-      showDetailBtn: false,
       showDeleteModal: false,
       showDetailModal: false,
+      currentRowDetail: '',
       departmentItem: [],
       employeeStatusItem: [],
       departmentPositionItem: [],
@@ -343,7 +375,9 @@ export default {
       // 用户默认显示
       roleStr: '',
       // 员工状态默认显示
-      employeeStatusStr: ''
+      employeeStatusStr: '',
+      // 当前登录用户
+      currentEmpl: ''
     }
   },
   created () {
@@ -353,6 +387,7 @@ export default {
     // this.getDepartmentPosition()
     this.getEmployeeStatus()
     this.getRoles()
+    this.currentEmpl = JSON.parse(localStorage.getItem('currentUser'))
   },
   methods: {
     add () {
@@ -388,6 +423,20 @@ export default {
         this.employeeStatusStr = '无'
       }
       this.showEditModal = true
+    },
+    showEdit () {
+      for (let i = 0; i < this.currentEmpl.roles.length; i++) {
+        if (this.currentEmpl.roles[i].description === '管理员') {
+          return true
+        }
+      }
+    },
+    showDelete () {
+      for (let i = 0; i < this.currentEmpl.roles.length; i++) {
+        if (this.currentEmpl.roles[i].description === '管理员') {
+          return true
+        }
+      }
     },
     getEmployeePage () {
       let data = {
@@ -548,8 +597,11 @@ export default {
       this.getEmployeePage()
     },
     showDetail (row, index) {
-      this.currentRowId = row.id
+      this.currentRowDetail = row
       this.showDetailModal = true
+    },
+    closeDetail () {
+      this.showDetailModal = false
     },
     // 分页
     changePageNo (pageNo) {
@@ -568,18 +620,6 @@ export default {
     },
     pageSize: function () {
       this.getEmployeePage()
-    },
-    buttonList: function (val) {
-      val.forEach(element => {
-        var id = element.buttonId
-        if (id.toUpperCase().indexOf('addbtn'.toUpperCase()) >= 0) {
-          this.showAddBtn = true
-        } else if (id.toUpperCase().indexOf('editbtn'.toUpperCase()) >= 0) {
-          this.showEditBtn = true
-        } else if (id.toUpperCase().indexOf('delbtn'.toUpperCase()) >= 0 || id.toUpperCase().indexOf('batchbtn'.toUpperCase()) >= 0) {
-          this.showDeleteBtn = true
-        }
-      })
     }
   }
 }
