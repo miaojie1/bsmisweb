@@ -7,7 +7,7 @@
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
         <Button @click="reset" type="primary">重置</Button>
-        <Button @click="add" type="primary">添加</Button>
+        <Button v-show="isShow(row)" @click="add" type="primary">添加</Button>
       </i-col>
     </Row>
     <Table
@@ -22,8 +22,8 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" v-show="showEdit(row)" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" v-show="showDelete(row)" @click="remove(row, index)">删除</Button>
+        <Button type="primary" size="small" style="margin-right: 1px" v-show="isShow(row)" @click="edit(row, index)">编辑</Button>
+        <Button type="error" size="small" v-show="isShow(row)" @click="remove(row, index)">删除</Button>
         <Button type="primary" size="small" @click="showDetail(row, index)">详情</Button>
       </template>
     </Table>
@@ -424,14 +424,7 @@ export default {
       }
       this.showEditModal = true
     },
-    showEdit () {
-      for (let i = 0; i < this.currentEmpl.roles.length; i++) {
-        if (this.currentEmpl.roles[i].description === '管理员') {
-          return true
-        }
-      }
-    },
-    showDelete () {
+    isShow () {
       for (let i = 0; i < this.currentEmpl.roles.length; i++) {
         if (this.currentEmpl.roles[i].description === '管理员') {
           return true
