@@ -149,7 +149,7 @@ export default {
       let data = {
         access_token: localStorage.getItem('jwtToken')
       }
-      let url = '/employee/listAllEmployees'
+      let url = '/superLogJob/listAllSupEmployees'
       this.$http.post(url, data).then(res => {
         if (res.status === 200) {
           this.employeeList = res.data
