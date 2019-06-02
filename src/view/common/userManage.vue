@@ -7,7 +7,7 @@
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
         <Button @click="reset" type="primary">重置</Button>
-        <Button v-show="isShow(row)" @click="add" type="primary">添加</Button>
+        <Button @click="add" type="primary">添加</Button>
       </i-col>
     </Row>
     <Table
