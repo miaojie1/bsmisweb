@@ -6,7 +6,7 @@
       </i-col>
       <i-col span="8">
         <Button @click="search" type="primary">查询</Button>
-        <Button @click="add" type="primary">添加</Button>
+        <Button v-if="showBtn" @click="add" type="primary">添加</Button>
       </i-col>
     </Row>
     <Table
@@ -21,9 +21,9 @@
         <strong>{{ row.name }}</strong>
       </template>
       <template slot="action" slot-scope="{ row, index }">
-        <Button type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
-        <Button type="error" size="small" @click="remove(row, index)">删除</Button>
-        <Button type="success" size="small" @click="addRoot(row,index)">角色授权</Button>
+        <Button v-if="showBtn" type="primary" size="small" style="margin-right: 1px" @click="edit(row, index)">编辑</Button>
+        <Button v-if="showBtn" type="error" size="small" @click="remove(row, index)">删除</Button>
+        <Button v-if="showBtn" type="success" size="small" @click="addRoot(row,index)">角色授权</Button>
       </template>
     </Table>
     <div style="margin: 10px;overflow: hidden">
@@ -113,7 +113,7 @@ import btnManage from '../../components/btnManage'
 export default {
   data () {
     return {
-      buttonList: [],
+      // buttonList: [],
       columns: [
         {
           title: 'ID',
@@ -190,6 +190,7 @@ export default {
       allRoleData: [],
       rootsData: '',
       currentRoots: '',
+      currentEmpl: '',
       menusData: '',
       formData: {
         name: '',
@@ -206,9 +207,7 @@ export default {
       showAddModal: false,
       showDeleteModal: false,
       showEditModal: false,
-      showAddBtn: false,
-      showDeleteBtn: false,
-      showEditBtn: false,
+      showBtn: false,
       showAddRootModal: false,
       // 当前选择行的ID
       currentRowId: '',
@@ -223,8 +222,9 @@ export default {
     }
   },
   created () {
-    this.buttonList = JSON.parse(localStorage.getItem('operation'))
+    // this.buttonList = JSON.parse(localStorage.getItem('operation'))
     this.getRolePage()
+    this.isShow()
   },
   methods: {
     /**
@@ -402,6 +402,14 @@ export default {
           this.showAddRootModal = false
         }
       })
+    },
+    isShow () {
+      this.currentEmpl = JSON.parse(localStorage.getItem('currentUser'))
+      for (let i = 0; i < this.currentEmpl.roles.length; i++) {
+        if (this.currentEmpl.roles[i].description === '管理员') {
+          this.showBtn = true
+        }
+      }
     }
   },
   components: {
@@ -413,18 +421,18 @@ export default {
     },
     pageSize: function () {
       this.getRolePage()
-    },
-    buttonList: function (val) {
-      val.forEach(element => {
-        if (element.buttonId === 'addBtn') {
-          this.showAddBtn = true
-        } else if (element.buttonId === 'editBtn') {
-          this.showEditBtn = true
-        } else if (element.buttonId === 'deleteBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
-          this.showDeleteBtn = true
-        }
-      })
     }
+    // buttonList: function (val) {
+    //   val.forEach(element => {
+    //     if (element.buttonId === 'addBtnOk') {
+    //       this.showAddBtn = true
+    //     } else if (element.buttonId === 'editBtn') {
+    //       this.showEditBtn = true
+    //     } else if (element.buttonId === 'delBtn' || element.buttonId === 'batchDel' || element.buttonId === 'delBtn') {
+    //       this.showDeleteBtn = true
+    //     }
+    //   })
+    // }
   }
 }
 </script>
